@@ -1,4 +1,4 @@
-
+ 
     // Get a file as a string using  AJAX
     function loadFileAJAX(name) {
         var xhr = new XMLHttpRequest(),
@@ -8,8 +8,7 @@
         return xhr.status == okStatus ? xhr.responseText : null;
     };
 
-    
-    function initShaders(gl, vShaderName, fShaderName) {
+  function initShaders(gl, vShaderName, fShaderName) {
         function getShader(gl, shaderName, type) {
             var shader = gl.createShader(type),
                 shaderScript = loadFileAJAX(shaderName);
@@ -38,7 +37,6 @@
             return null;
         }
 
-        
-        return program;
-    };
 
+  turn program;
+    };
