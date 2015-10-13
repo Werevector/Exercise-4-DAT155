@@ -35,5 +35,9 @@ werevector <- user development
 werevector-animtest <- branch for testing animations by user.  
 
 Try to keep objects and functions as tidy as possible, give good names, and structure it properly.  
-Use prototype to relate functions to certain "objects", dont define one function with a load of functions inside.  
+Use prototype to relate functions to certain *"objects"*, dont define one function with a load of functions inside.  
+
+Commits are supposed to be informative, write a small compressed message about what you have done, nothing else.
+
+
 
