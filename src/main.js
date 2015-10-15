@@ -6,10 +6,12 @@ var init = function(){
     var near = 0.1;
     var far = 1000;
     
-    var canvas = document.getElementById("canvas");
-    var renderer = new THREE.WebGLRenderer({
-        canvas: canvas, antialias: false
-    });
+    //Opprett renderer
+    var renderer = new THREE.WebGLRenderer();
+    
+    //Legg til canvas element
+    document.body.appendChild(renderer.domElement);
+    
     var camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     
     var scene = new THREE.Scene();
@@ -23,7 +25,7 @@ var init = function(){
         
         this.init = function(){
             this.texture = THREE.ImageUtils.loadTexture("textures/jupiter.jpg");
-            this.material = THREE.MeshPhongMaterial({ map: this.texture });
+            this.material = new THREE.MeshPhongMaterial({ map: this.texture });
             this.mesh = new THREE.Mesh(sphereGeometry, this.material);
         }
     }
@@ -34,8 +36,6 @@ var init = function(){
     var light = new function(){
         this.point = null;
         this.ambient = null
-        this.point.position.z = null;
-        this.point.position.y = null;
         
         this.init = function(){
             this.point = new THREE.PointLight(0xFFFFFF, 5);
