@@ -7,6 +7,7 @@ function World(){
 	
 	//Remove this when player class have camera
 	this.tempCamera = new THREE.PerspectiveCamera(70, 1, 0.1, 1000);
+	this._scene.add(this.tempCamera);
 	this.tempCamera.position.z = 10;
 	this.tempCamera.position.y = 10;
 	
