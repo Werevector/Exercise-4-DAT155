@@ -28,9 +28,9 @@ var init = function(){
   frameStats.domElement.style.left = '0px';
   frameStats.domElement.style.top = '0px';
   document.body.appendChild( frameStats.domElement );
-  
+
   world = new World();
-  
+
   update();
 
   /*scene = new THREE.Scene;
