@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/Werevector/Exercise-4-DAT155.png?label=ready&title=Ready)](https://waffle.io/Werevector/Exercise-4-DAT155)
 # Exercise-4-DAT155
 
 Plans for development
