@@ -31,7 +31,15 @@ var init = function(){
 
   world = new World();
 
-  update();
+  THREE.DefaultLoadingManager.onProgress = function ( item, loaded, total ) {
+    console.log( item, loaded, total );
+    if(loaded == total){
+
+      update();
+    }
+  };
+
+  //update();
 
   /*scene = new THREE.Scene;
   clock = new THREE.Clock;

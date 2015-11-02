@@ -11,8 +11,15 @@ function World() {
   this.tempCamera.position.z = 10;
   this.tempCamera.position.y = 10;
 
-  this.tempPlayer = new Player();
+  this.tempPlayer = new Player(this._scene);
+	// THREE.DefaultLoadingManager.onProgress = function ( item, loaded, total ) {
+	// 	console.log( item, loaded, total );
+	// 	if(loaded == total){
+	// 		this._scene.add(this.tempPlayer._model);
+	// 	}
+	// };
 	this._scene.add(this.tempPlayer._model);
+
 	//this.tempPlayer.setSceneP(this._scene);
 	//this.tempPlayer._loadPlayerModel('resources/models/player.obj');
 
