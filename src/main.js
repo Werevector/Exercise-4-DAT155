@@ -2,6 +2,7 @@
 
 var renderer;
 var scene;
+var world;
 
 var camera;
 var clock;
@@ -27,8 +28,12 @@ var init = function(){
   frameStats.domElement.style.left = '0px';
   frameStats.domElement.style.top = '0px';
   document.body.appendChild( frameStats.domElement );
+  
+  world = new World();
+  
+  update();
 
-  scene = new THREE.Scene;
+  /*scene = new THREE.Scene;
   clock = new THREE.Clock;
 
   //Load the single object inside the scene, with a wireframe helper object
@@ -69,19 +74,19 @@ var init = function(){
 
   var pointLight = new THREE.PointLight(0xffffff);
   pointLight.position.set(0,300,200);
-  scene.add(pointLight);
+  scene.add(pointLight);*/
 
 }
 window.addEventListener("load", init);
 
 var render = function(){
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.render(scene, camera);
+  world.render(renderer);
 }
 
 var update = function(){
   frameStats.begin();
-  model.rotation.y -= 1 * clock.getDelta();
+  //model.rotation.y -= 1 * clock.getDelta();
   render();
   frameStats.end();
   window.requestAnimFrame(update);
