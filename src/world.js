@@ -23,8 +23,7 @@ function World() {
 	//this.tempPlayer.setSceneP(this._scene);
 	//this.tempPlayer._loadPlayerModel('resources/models/player.obj');
 
-  var terrainMaterial = new THREE.MeshPhongMaterial( /*{wireframe: true}*/ );
-  var terrain = new THREE.Mesh(new THREE.PlaneGeometry(20, 20, 10, 10), terrainMaterial);
+	var terrain = loadModel('resources/models/terrain.obj', 'resources/models/terrain.mtl')
   this.tempCamera.lookAt(terrain.position);
   this.addObject(terrain);
 
@@ -35,8 +34,8 @@ function World() {
     this.init = function() {
       this.point = new THREE.PointLight(0xFFFFFF, 2);
       this.ambient = new THREE.AmbientLight(0x222222);
-      this.point.position.y = 2;
-      this.point.position.z = 2;
+      this.point.position.y = 30;
+      this.point.position.z = 10;
     }
   }
   light.init();
