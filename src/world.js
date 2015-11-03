@@ -23,8 +23,7 @@ function World() {
   this.tempPlayer = new Player(this._scene);
 	this._scene.add(this.tempPlayer._model);
 
-
-	var terrain = loadModel('resources/models/terrain.obj', 'resources/models/terrain.mtl')
+	var terrain = loadModel('resources/models/terrain2.obj', 'resources/models/terrain2.mtl');
   this.addObject(terrain);
 
   var light = new function() {
@@ -34,7 +33,7 @@ function World() {
     this.init = function() {
       this.point = new THREE.PointLight(0xFFFFFF, 2);
       this.ambient = new THREE.AmbientLight(0x222222);
-      this.point.position.y = 30;
+      this.point.position.y = 10;
       this.point.position.z = 10;
     }
   }
