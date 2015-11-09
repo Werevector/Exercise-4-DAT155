@@ -16,27 +16,31 @@ function World() {
 
   var skyTexture = THREE.ImageUtils.loadTexture('resources/background.jpg');
   var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
-  var skyboxMaterial = new THREE.MeshBasicMaterial({ map: skyTexture, color: 0xffffff, side: THREE.BackSide});
+  var skyboxMaterial = new THREE.MeshBasicMaterial({ 
+    map: skyTexture,
+    color: 0xffffff,
+    side: THREE.BackSide
+  });
   this.skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
   this._scene.add(this.skybox);
 
   this.tempPlayer = new Player(this._scene);
-	this._scene.add(this.tempPlayer._model);
+  this._scene.add(this.tempPlayer._model);
 
-	var terrain = loadModel('resources/models/terrain2.obj', 'resources/models/terrain2.mtl');
+  var terrain = loadTexturedObj('resources/models/terrain2.obj', 'resources/grass.jpg');
   this.addObject(terrain);
 
   var light = new function() {
-    this.point = null;
-    this.ambient = null
+  this.point = null;
+  this.ambient = null
 
-    this.init = function() {
-      this.point = new THREE.PointLight(0xFFFFFF, 2);
-      this.ambient = new THREE.AmbientLight(0x222222);
-      this.point.position.y = 10;
-      this.point.position.z = 10;
-    }
+  this.init = function() {
+    this.point = new THREE.PointLight(0xFFFFFF, 2);
+    this.ambient = new THREE.AmbientLight(0x222222);
+    this.point.position.y = 10;
+    this.point.position.z = 10;
   }
+}
 
   light.init();
   this.addObject(light.point);
