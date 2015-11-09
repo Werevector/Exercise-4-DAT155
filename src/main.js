@@ -28,10 +28,18 @@ var init = function(){
   frameStats.domElement.style.left = '0px';
   frameStats.domElement.style.top = '0px';
   document.body.appendChild( frameStats.domElement );
-  
+
   world = new World();
-  
-  update();
+
+  THREE.DefaultLoadingManager.onProgress = function ( item, loaded, total ) {
+    console.log( item, loaded, total );
+    if(loaded == total){
+
+      update();
+    }
+  };
+
+  //update();
 
   /*scene = new THREE.Scene;
   clock = new THREE.Clock;
