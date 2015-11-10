@@ -5,6 +5,7 @@ function World() {
   this._objects = [];
   this._player = new Player(this._scene);
   this._terrain = null;
+  this._skyTexture = null;
   this._skybox = null;
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 10000);
   this._camControls = new THREE.FirstPersonControls(this._camera);  
@@ -17,15 +18,14 @@ World.prototype.init = function() {
   this._camControls.movementSpeed = 20;
   this._scene.add(this._camera);
   
-  var skyTexture = THREE.ImageUtils.loadTexture('resources/background.jpg');
   var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
   var skyboxMaterial = new THREE.MeshBasicMaterial({ 
-    map: skyTexture,
+    map: this._skyTexture,
     color: 0xffffff,
     side: THREE.BackSide
   });
   this._skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
-  this._scene.add(this.skybox);
+  this._scene.add(this._skybox);
 
   this._scene.add(this._player._model);
 
@@ -52,9 +52,11 @@ World.prototype.addObject = function(object) {
 
 World.prototype.load = function(objMtlLoader) {
   var self = this;
-  objMtlLoader.load("resources/models/terrain2.obj",
-                    "resources/models/terrain2.mtl",
+  objMtlLoader.load("resources/models/terrain3.obj",
+                    "resources/models/terrain3.mtl",
                     function(obj) {
                       self._terrain = obj;
                     });
+  
+  this._skyTexture = THREE.ImageUtils.loadTexture('resources/background.jpg');
 }
