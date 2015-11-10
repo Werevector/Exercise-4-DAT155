@@ -16,8 +16,8 @@ function Player(scene){
 Player.prototype.load = function(jsonLoader) {
     var self = this;
     jsonLoader.load("resources/models/basejson.js", function(geometry, materials) {
-      //self._model = new THREE.SkinnedMesh(geometry, new THREE.MeshFaceMaterial(materials));
-      self._model = new THREE.Object3D();
+      self._model = new THREE.SkinnedMesh(geometry, new THREE.MeshFaceMaterial(materials));
+      //self._model = new THREE.Object3D();
     });
   }
 
