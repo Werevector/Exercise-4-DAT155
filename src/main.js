@@ -15,7 +15,7 @@ var clock = new THREE.Clock();
 var RENDER_WIDTH = window.innerWidth, RENDER_HEIGHT = window.innerHeight;
 
 
-var init = function(){
+function onLoad(){
 
   var width = window.innerWidth;
   var height = window.innerHeight;
@@ -33,26 +33,32 @@ var init = function(){
   frameStats.domElement.style.left = '0px';
   frameStats.domElement.style.top = '0px';
   document.body.appendChild( frameStats.domElement );
-
+  
+  var objMtlLoader = new THREE.OBJMTLLoader();
   world = new World();
+  world.load(objMtlLoader);
 
   THREE.DefaultLoadingManager.onProgress = function ( item, loaded, total ) {
     console.log( item, loaded, total );
     if(loaded == total){
-
-      update();
+      init();
     }
   };
 
 }
-window.addEventListener("load", init);
+window.addEventListener("load", onLoad);
 
-var render = function(){
+function init(){
+  world.init();
+  update();
+}
+
+function render(){
   renderer.setSize(RENDER_WIDTH, RENDER_HEIGHT);
   world.render(renderer);
 }
 
-var update = function(){
+function update(){
   var delta = clock.getDelta();
   frameStats.begin();
   //model.rotation.y -= 1 * clock.getDelta();
