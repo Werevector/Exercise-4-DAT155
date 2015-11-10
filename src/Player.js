@@ -1,7 +1,8 @@
 function Player(scene){
   this._scene = scene;
   this._camera = null;
-  this._model = loadModel('resources/models/player.obj', 'resources/models/player.mtl');
+  //this._model = loadModel('resources/models/player.obj', 'resources/models/player.mtl');
+  this._model = null;
 
   // THREE.DefaultLoadingManager.onProgress = function ( item, loaded, total ) {
   // 	console.log( item, loaded, total );
@@ -11,6 +12,14 @@ function Player(scene){
   // };
   //this._scene.add(this._model);
 }
+
+Player.prototype.load = function(jsonLoader) {
+    var self = this;
+    jsonLoader.load("resources/models/basejson.js", function(geometry, materials) {
+      //self._model = new THREE.SkinnedMesh(geometry, new THREE.MeshFaceMaterial(materials));
+      self._model = new THREE.Object3D();
+    });
+  }
 
 // Player.prototype.move(destinationPoint) {
 //   //The player will use some pathfindig algorithm to move

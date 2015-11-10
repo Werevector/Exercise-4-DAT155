@@ -33,10 +33,11 @@ function onLoad(){
   frameStats.domElement.style.left = '0px';
   frameStats.domElement.style.top = '0px';
   document.body.appendChild( frameStats.domElement );
-  
+
   var objMtlLoader = new THREE.OBJMTLLoader();
+  var jsonLoader = new THREE.JSONLoader();
   world = new World();
-  world.load(objMtlLoader);
+  world.load(objMtlLoader, jsonLoader);
 
   THREE.DefaultLoadingManager.onProgress = function ( item, loaded, total ) {
     console.log( item, loaded, total );
