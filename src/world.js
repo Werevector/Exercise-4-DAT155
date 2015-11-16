@@ -11,6 +11,7 @@ function World() {
   this._camControls = new THREE.FirstPersonControls(this._camera);  
   this._pointLight = new THREE.PointLight(0xFFFFFF, 2);
   this._ambientLight = new THREE.AmbientLight(0x222222);
+  this._cursor = new Cursor();
 }
 
 World.prototype.init = function() {
@@ -35,6 +36,7 @@ World.prototype.init = function() {
   this.addObject(this._ambientLight);
   
   this.addObject(this._terrain);
+  this.addObject(this._cursor._model);
 }
 
 World.prototype.render = function(renderer) {
@@ -52,11 +54,12 @@ World.prototype.addObject = function(object) {
 
 World.prototype.load = function(objMtlLoader) {
   var self = this;
-  objMtlLoader.load("resources/SnowTerrain/SnowTerrain.obj",
-                    "resources/SnowTerrain/SnowTerrain.mtl",
+  objMtlLoader.load("resources/SnowTerrain/SnowTerrain2.obj",
+                    "resources/SnowTerrain/SnowTerrain2.mtl",
                     function(obj) {
                       self._terrain = obj;
                     });
   
-  this._skyTexture = THREE.ImageUtils.loadTexture('resources/background.jpg');
+  this._cursor.load(objMtlLoader);
+  this._skyTexture = THREE.ImageUtils.loadTexture("resources/background.jpg");
 }
