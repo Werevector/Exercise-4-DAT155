@@ -52,8 +52,8 @@ World.prototype.addObject = function(object) {
 
 World.prototype.load = function(objMtlLoader) {
   var self = this;
-  objMtlLoader.load("resources/models/terrain3.obj",
-                    "resources/models/terrain3.mtl",
+  objMtlLoader.load("resources/SnowTerrain/SnowTerrain.obj",
+                    "resources/SnowTerrain/SnowTerrain.mtl",
                     function(obj) {
                       self._terrain = obj;
                     });
