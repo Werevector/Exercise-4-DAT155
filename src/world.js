@@ -4,6 +4,7 @@ function World() {
   this._scene = new THREE.Scene();
   this._objects = [];
   this._player = new Player(this._scene);
+  this.rata = null;
   this._terrain = null;
   this._skyTexture = null;
   this._skybox = null;
@@ -28,6 +29,8 @@ World.prototype.init = function() {
   this._scene.add(this._skybox);
 
   this._scene.add(this._player._model);
+
+  //this.scene.add(this.rata.character.object3d);
 
   this._pointLight.position.y = 10;
   this._pointLight.position.z = 10;
@@ -58,6 +61,7 @@ World.prototype.load = function(objMtlLoader, jsonLoader) {
                       self._terrain = obj;
                     });
   this._player.load(jsonLoader);
+  this.rata = new THREEx.MD2CharacterRatmahatta();
   this._skyTexture = THREE.ImageUtils.loadTexture('resources/background.jpg');
 
 }

@@ -13,6 +13,18 @@ function Player(scene){
   //this._scene.add(this._model);
 }
 
+// Player.prototype.load = function(objMtlLoader) {
+//   var self = this;
+//   objMtlLoader.load("resources/SnowTerrain/batman.obj",
+//                   "resources/SnowTerrain/batman.mtl",
+//                   function(obj) {
+//                     self._terrain = obj;
+//                   });
+//   this._player.load(jsonLoader);
+//   this._skyTexture = THREE.ImageUtils.loadTexture('resources/background.jpg');
+//
+// }
+
 Player.prototype.load = function(jsonLoader) {
     var self = this;
     jsonLoader.load("resources/models/basejson.js", function(geometry, materials) {

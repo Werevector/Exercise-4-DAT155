@@ -37,6 +37,7 @@ function onLoad(){
   var objMtlLoader = new THREE.OBJMTLLoader();
   var jsonLoader = new THREE.JSONLoader();
   world = new World();
+  var uvtest = THREE.UVMapping;
   world.load(objMtlLoader, jsonLoader);
 
   THREE.DefaultLoadingManager.onProgress = function ( item, loaded, total ) {
