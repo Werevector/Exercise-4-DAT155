@@ -16,13 +16,99 @@
 <body>
 
     <canvas id="canvas"></canvas>
+	<img src="resources/models/heightmap.png" id="heightmap" hidden/>
+	
+	<script id="instanced-vshader" type="x-shader/x-vertex">
+		// Other attributes and uniforms are supposed to be filled in by Three.js
+		// To avoid it being filled in automatically, use RawShaderMaterial
 
+        // Instanced attribute, updated only when a new instance is drawn (ie. when all vertices have been drawn and
+        // we're going to draw a slightly different one.
+		attribute vec3 translate;
+		attribute float scale;
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vec4 mvPosition = modelViewMatrix * vec4( translate + position * scale, 1.0 );
+
+			vUv = uv;
+
+			gl_Position = projectionMatrix * mvPosition;
+
+		}
+	</script>
+
+	<script id="fshader" type="x-shader/x-fragment">
+        // Other attributes and uniforms are supposed to be filled in by Three.js
+		// To avoid it being filled in automatically, use RawShaderMaterial
+
+           uniform vec3 color;
+
+		void main() {
+
+			gl_FragColor = vec4(color, 1.0);
+
+		}
+	</script>
+
+	<script id="terrain-fshader" type="x-shader/x-fragment">
+        // Other attributes and uniforms are supposed to be filled in by Three.js
+		// To avoid it being filled in automatically, use RawShaderMaterial
+
+        varying vec2 vUv;
+
+        uniform sampler2D heightMap;
+
+        uniform sampler2D seabed;
+        uniform sampler2D grass;
+        uniform sampler2D rock;
+        uniform sampler2D snow;
+
+        uniform vec2 terrainTextureScale;
+
+        uniform float grassLevel;
+        uniform float rockLevel;
+        uniform float snowLevel;
+
+		void main() {
+
+            //float height = 0.3;
+            float height = texture2D(heightMap, vUv).r;
+
+            vec2 scaledUv = vUv * terrainTextureScale;
+
+            vec3 finalColor = vec3(0.0, 0.0, 0.0);
+
+            if (height < grassLevel) {
+                finalColor = texture2D(seabed, scaledUv).rgb;
+
+            } else if (height < rockLevel) {
+                finalColor = texture2D(grass, scaledUv).rgb;
+            } else if (height < snowLevel){
+                finalColor = texture2D(rock, scaledUv).rgb;
+            } else {
+                finalColor = texture2D(snow, scaledUv).rgb;
+            }
+
+			gl_FragColor = vec4(finalColor, 1.0);
+
+		}
+	</script>
 
     <script type="text/javascript" src="three.js/three.js"></script>
     <script type="text/javascript" src="three.js/OBJLoader.js"></script>
     <script type="text/javascript" src="three.js/MTLLoader.js"></script>
     <script type="text/javascript" src="three.js/OBJMTLLoader.js"></script>
     <script type="text/javascript" src="three.js/FirstPersonControls.js"></script>
+    
+    <script type="text/javascript" src="common/HeightMapGeometry.js"></script>
+    <script type="text/javascript" src="common/HeightMapMesh.js"></script>
+    <script type="text/javascript" src="common/HeightMapHelpers.js"></script>
+    <script type="text/javascript" src="common/ImageHelpers.js"></script>
+    <script type="text/javascript" src="common/MathHelpers.js"></script>
+    <script type="text/javascript" src="common/Tools.js"></script>
 
     <script type="text/javascript" src="src/stats.min.js"></script>
     <script type="text/javascript" src="src/ObjectLoader.js"></script>

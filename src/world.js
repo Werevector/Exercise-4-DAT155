@@ -12,6 +12,10 @@ function World() {
   this._pointLight = new THREE.PointLight(0xFFFFFF, 2);
   this._ambientLight = new THREE.AmbientLight(0x222222);
   this._cursor = new Cursor();
+  
+  this.mapWidth = 128;
+  this.mapDepth = 128;
+  this.mapMaxHeight = 25;
 }
 
 World.prototype.init = function() {
@@ -30,10 +34,18 @@ World.prototype.init = function() {
 
   this._scene.add(this._player._model);
 
-  this._pointLight.position.y = 10;
+  this._pointLight.position.y = 40;
   this._pointLight.position.z = 10;
   this.addObject(this._pointLight);
   this.addObject(this._ambientLight);
+  
+  //Last inn heightmap
+  var heightMapImg = document.getElementById('heightmap');
+  var terrainData = getPixelValues(heightMapImg, 'r');
+  var heightMapGeometry = new HeightMapBufferGeometry(terrainData, heightMapImg.width, heightMapImg.height);
+  heightMapGeometry.scale(this.mapWidth, this.mapMaxHeight, this.mapDepth);
+  var terrainMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+  this._terrain = new HeightMapMesh(heightMapGeometry, terrainMaterial);
   
   this.addObject(this._terrain);
   this.addObject(this._cursor._model);
@@ -54,11 +66,11 @@ World.prototype.addObject = function(object) {
 
 World.prototype.load = function(objMtlLoader) {
   var self = this;
-  objMtlLoader.load("resources/SnowTerrain/SnowTerrain2.obj",
+  /*objMtlLoader.load("resources/SnowTerrain/SnowTerrain2.obj",
                     "resources/SnowTerrain/SnowTerrain2.mtl",
                     function(obj) {
                       self._terrain = obj;
-                    });
+                    });*/
   
   this._cursor.load(objMtlLoader);
   this._skyTexture = THREE.ImageUtils.loadTexture("resources/background.jpg");
