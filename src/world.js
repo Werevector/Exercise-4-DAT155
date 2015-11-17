@@ -8,19 +8,21 @@ function World() {
   this._skyTexture = null;
   this._skybox = null;
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 10000);
-  this._camControls = new THREE.FirstPersonControls(this._camera);  
+  //this._camControls = new THREE.FirstPersonControls(this._camera);  
   this._pointLight = new THREE.PointLight(0xFFFFFF, 2);
   this._ambientLight = new THREE.AmbientLight(0x222222);
-  this._cursor = new Cursor();
+  //this._cursor = new Cursor();
   
   this.mapWidth = 128;
   this.mapDepth = 128;
   this.mapMaxHeight = 25;
+  
+  this.controller = new Controller(this);
 }
 
 World.prototype.init = function() {
-  this._camControls.lookSpeed = 0.4;
-  this._camControls.movementSpeed = 20;
+  //this._camControls.lookSpeed = 0.4;
+  //this._camControls.movementSpeed = 20;
   this._scene.add(this._camera);
   
   var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
@@ -31,8 +33,6 @@ World.prototype.init = function() {
   });
   this._skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
   this._scene.add(this._skybox);
-
-  this._scene.add(this._player._model);
 
   this._pointLight.position.y = 40;
   this._pointLight.position.z = 10;
@@ -46,9 +46,13 @@ World.prototype.init = function() {
   heightMapGeometry.scale(this.mapWidth, this.mapMaxHeight, this.mapDepth);
   var terrainMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
   this._terrain = new HeightMapMesh(heightMapGeometry, terrainMaterial);
+  this._terrain.name = "terrain";
   
   this.addObject(this._terrain);
-  this.addObject(this._cursor._model);
+  this.addObject(this.controller.cursor._model);
+  
+  this._player._model.position.z = this._terrain.getHeightAtPoint(this._player._model.position);
+  this._scene.add(this._player._model);
 }
 
 World.prototype.render = function(renderer) {
@@ -56,7 +60,7 @@ World.prototype.render = function(renderer) {
 }
 
 World.prototype.update = function(delta) {
-  this._camControls.update(delta);
+  this.controller.update(delta);
 }
 
 World.prototype.addObject = function(object) {
@@ -72,6 +76,6 @@ World.prototype.load = function(objMtlLoader) {
                       self._terrain = obj;
                     });*/
   
-  this._cursor.load(objMtlLoader);
+  this.controller.load(objMtlLoader);
   this._skyTexture = THREE.ImageUtils.loadTexture("resources/background.jpg");
 }
