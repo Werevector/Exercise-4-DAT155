@@ -7,24 +7,34 @@ function World() {
   this.rata = null;
   this._terrain = null;
   this._skyTexture = null;
+  this._groundtex = null;
   this._skybox = null;
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 10000);
-  this._camera.position.y = 4;
+  this._camera.position.y = 25;
   this._camera.position.z = 6;
   this._camera.position.x = 3;
   //this._camera.lookAt(new THREE.Vector3(0,0, -3));
   //this._camControls = new THREE.FirstPersonControls(this._camera);
   this._pointLight = new THREE.PointLight(0xFFFFFF, 2);
   this._ambientLight = new THREE.AmbientLight(0x222222);
+  this._cursor = new Cursor();
+
+  // this.mapWidth = 128;
+  // this.mapDepth = 128;
+
+  this.mapWidth = 200;
+  this.mapDepth = 200;
+
+  this.mapMaxHeight = 20;
 }
 
 World.prototype.init = function() {
   //this._camControls.lookSpeed = 0.1;
-  //this._camControls.movementSpeed = 10;
-  this._camera.lookAt(this.rata.character.object3d.position);
+  //this._camControls.movementSpeed = 50;
+
   this._scene.add(this._camera);
 
-  var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
+  var skyboxGeometry = new THREE.SphereGeometry(3000, 60, 60);
   var skyboxMaterial = new THREE.MeshBasicMaterial({
     map: this._skyTexture,
     color: 0xffffff,
@@ -34,20 +44,27 @@ World.prototype.init = function() {
   this._skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
   this._scene.add(this._skybox);
 
+  var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
+  directionalLight.name = 'sun';
+  directionalLight.position.set(1, 10000, 0);
+  //directionalLight.rotateZ(45 *Math.PI/180);
+
+  this._scene.add(directionalLight);
+  this._scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
+
   //this._scene.add(this._player._model);
 
 
 	this.rata.setSkinName('ctf_r');
 	this.rata.setWeaponName('w_sshotgun');
 
+
   this._scene.add(this.rata.character.object3d);
 
-  this._pointLight.position.y = 10;
+  this._pointLight.position.y = 100;
   this._pointLight.position.z = 10;
   this.addObject(this._pointLight);
   this.addObject(this._ambientLight);
-
-  this.addObject(this._terrain);
 
   //////////////////////////////////////////////////////////////////////////////////
 	//		controls.input based on keyboard				//
@@ -81,6 +98,26 @@ World.prototype.init = function() {
 		if( event.keyCode === 39 )	inputs.right	= false
 	});
 
+  //Last inn heightmap
+  var heightMapImg = document.getElementById('heightmap');
+  var terrainData = getPixelValues(heightMapImg, 'r');
+  var heightMapGeometry = new HeightMapBufferGeometry(terrainData, heightMapImg.width, heightMapImg.height);
+  heightMapGeometry.scale(this.mapWidth, this.mapMaxHeight, this.mapDepth);
+
+  this._groundtex.wrapS = this._groundtex.wrapT = THREE.RepeatWrapping;
+  this._groundtex.repeat.set( 2, 1 );
+  var terrainMaterial = new THREE.MeshPhongMaterial({
+    map: this._groundtex,
+    color: 0x005500,
+    shininess: 1
+  });
+  this._terrain = new HeightMapMesh(heightMapGeometry, terrainMaterial);
+  this.rata.character.object3d.position.y =
+  this._terrain.getHeightAtPoint(this.rata.character.object3d.position);
+  this._camera.lookAt(this.rata.character.object3d.position);
+
+  this.addObject(this._terrain);
+  this.addObject(this._cursor._model);
 }
 
 World.prototype.render = function(renderer) {
@@ -89,6 +126,24 @@ World.prototype.render = function(renderer) {
 
 World.prototype.update = function(delta) {
   this._camera.lookAt(this.rata.character.object3d.position);
+
+
+  var ratapos = this.rata.character.object3d.position;
+  var terrheight = this._terrain.getHeightAtPoint(ratapos);
+  var diff = Math.abs(ratapos.y - terrheight)*10;
+
+  //if(ratapos.y = terrheight){
+    //this.rata.character.object3d.position.y = terrheight;
+  //}
+  console.log(diff);
+  if(ratapos.y > terrheight){
+    this.rata.character.object3d.position.y -= (0.5+diff)*delta;
+  }
+  if(ratapos.y < terrheight){
+    this.rata.character.object3d.position.y += (0.5+diff)*delta;
+  }
+
+  //this.rata.character.object3d.position.y = this._terrain.getHeightAtPoint(ratapos);
 
   var inputs	= this.rata.controls.inputs
   if( inputs.up || inputs.down ){
@@ -107,13 +162,15 @@ World.prototype.addObject = function(object) {
 
 World.prototype.load = function(objMtlLoader, jsonLoader) {
   var self = this;
-  objMtlLoader.load("resources/SnowTerrain/SnowTerrain.obj",
-                    "resources/SnowTerrain/SnowTerrain.mtl",
+  /*objMtlLoader.load("resources/SnowTerrain/SnowTerrain2.obj",
+                    "resources/SnowTerrain/SnowTerrain2.mtl",
                     function(obj) {
                       self._terrain = obj;
-                    });
-  this._player.load(jsonLoader);
+                    });*/
+  //this._player.load(jsonLoader);
   this.rata = new THREEx.MD2CharacterRatmahatta();
-  this._skyTexture = THREE.ImageUtils.loadTexture('resources/background.jpg');
 
+  this._cursor.load(objMtlLoader);
+  this._skyTexture = THREE.ImageUtils.loadTexture("resources/skydome.jpg");
+  this._groundtex = THREE.ImageUtils.loadTexture("resources/maptex.png");
 }
