@@ -9,14 +9,17 @@ function World() {
   this._skyTexture = null;
   this._skybox = null;
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 10000);
-  this._camControls = new THREE.FirstPersonControls(this._camera);
+  this._camera.position.y = 1;
+  this._camera.position.z = 2;
+  this._camera.lookAt(new THREE.Vector3(0,0, -3));
+  //this._camControls = new THREE.FirstPersonControls(this._camera);
   this._pointLight = new THREE.PointLight(0xFFFFFF, 2);
   this._ambientLight = new THREE.AmbientLight(0x222222);
 }
 
 World.prototype.init = function() {
-  this._camControls.lookSpeed = 0.4;
-  this._camControls.movementSpeed = 20;
+  //this._camControls.lookSpeed = 0.1;
+  //this._camControls.movementSpeed = 10;
   this._scene.add(this._camera);
 
   var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
@@ -25,19 +28,56 @@ World.prototype.init = function() {
     color: 0xffffff,
     side: THREE.BackSide
   });
+
   this._skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
   this._scene.add(this._skybox);
 
-  this._scene.add(this._player._model);
+  //this._scene.add(this._player._model);
 
-  //this.scene.add(this.rata.character.object3d);
+  this.rata.character.addEventListener('loaded', function(){
+		ratamahatta.setSkinName('ctf_b')
+		ratamahatta.setWeaponName('w_bfg')
+	})
+
+  this._scene.add(this.rata.character.object3d);
 
   this._pointLight.position.y = 10;
   this._pointLight.position.z = 10;
   this.addObject(this._pointLight);
   this.addObject(this._ambientLight);
 
-  this.addObject(this._terrain);
+  //this.addObject(this._terrain);
+
+  //////////////////////////////////////////////////////////////////////////////////
+	//		controls.input based on keyboard				//
+	//////////////////////////////////////////////////////////////////////////////////
+  var ratat = this.rata;
+	document.body.addEventListener('keydown', function(event){
+		var inputs	= ratat.controls.inputs
+		if( event.keyCode === 'W'.charCodeAt(0) )	inputs.up	= true
+		if( event.keyCode === 'S'.charCodeAt(0) )	inputs.down	= true
+		if( event.keyCode === 'A'.charCodeAt(0) )	inputs.left	= true
+		if( event.keyCode === 'D'.charCodeAt(0) )	inputs.right	= true
+
+		// to support arrows
+		if( event.keyCode === 38 )	inputs.up	= true
+		if( event.keyCode === 40 )	inputs.down	= true
+		if( event.keyCode === 37 )	inputs.left	= true
+		if( event.keyCode === 39 )	inputs.right	= true
+	});
+	document.body.addEventListener('keyup', function(event){
+		var inputs	= ratat.controls.inputs
+		if( event.keyCode === 'W'.charCodeAt(0) )	inputs.up	= false
+		if( event.keyCode === 'S'.charCodeAt(0) )	inputs.down	= false
+		if( event.keyCode === 'A'.charCodeAt(0) )	inputs.left	= false
+		if( event.keyCode === 'D'.charCodeAt(0) )	inputs.right	= false
+		// to support arrows
+		if( event.keyCode === 38 )	inputs.up	= false
+		if( event.keyCode === 40 )	inputs.down	= false
+		if( event.keyCode === 37 )	inputs.left	= false
+		if( event.keyCode === 39 )	inputs.right	= false
+	});
+
 }
 
 World.prototype.render = function(renderer) {
@@ -45,7 +85,14 @@ World.prototype.render = function(renderer) {
 }
 
 World.prototype.update = function(delta) {
-  this._camControls.update(delta);
+  var inputs	= this.rata.controls.inputs
+  if( inputs.up || inputs.down ){
+    this.rata.setAnimationName('run')
+  }else {
+    this.rata.setAnimationName('stand')
+  }
+  this.rata.update(delta);
+  //this._camControls.update(delta);
 }
 
 World.prototype.addObject = function(object) {
