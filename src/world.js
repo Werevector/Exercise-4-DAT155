@@ -16,9 +16,9 @@ function World() {
   this._ambientLight = new THREE.AmbientLight(0x222222);
   this._cursor = null;
   
-  this.mapWidth = 128;
-  this.mapDepth = 128;
-  this.mapMaxHeight = 25;
+  this.mapWidth = 256;
+  this.mapDepth = 256;
+  this.mapMaxHeight = 15;
 }
 
 World.prototype.init = function() {
