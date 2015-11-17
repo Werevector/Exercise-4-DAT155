@@ -9,9 +9,10 @@ function World() {
   this._skyTexture = null;
   this._skybox = null;
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 10000);
-  this._camera.position.y = 1;
-  this._camera.position.z = 2;
-  this._camera.lookAt(new THREE.Vector3(0,0, -3));
+  this._camera.position.y = 4;
+  this._camera.position.z = 6;
+  this._camera.position.x = 3;
+  //this._camera.lookAt(new THREE.Vector3(0,0, -3));
   //this._camControls = new THREE.FirstPersonControls(this._camera);
   this._pointLight = new THREE.PointLight(0xFFFFFF, 2);
   this._ambientLight = new THREE.AmbientLight(0x222222);
@@ -20,6 +21,7 @@ function World() {
 World.prototype.init = function() {
   //this._camControls.lookSpeed = 0.1;
   //this._camControls.movementSpeed = 10;
+  this._camera.lookAt(this.rata.character.object3d.position);
   this._scene.add(this._camera);
 
   var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
@@ -34,10 +36,9 @@ World.prototype.init = function() {
 
   //this._scene.add(this._player._model);
 
-  this.rata.character.addEventListener('loaded', function(){
-		ratamahatta.setSkinName('ctf_b')
-		ratamahatta.setWeaponName('w_bfg')
-	})
+
+	this.rata.setSkinName('ctf_r');
+	this.rata.setWeaponName('w_sshotgun');
 
   this._scene.add(this.rata.character.object3d);
 
@@ -46,7 +47,7 @@ World.prototype.init = function() {
   this.addObject(this._pointLight);
   this.addObject(this._ambientLight);
 
-  //this.addObject(this._terrain);
+  this.addObject(this._terrain);
 
   //////////////////////////////////////////////////////////////////////////////////
 	//		controls.input based on keyboard				//
@@ -71,6 +72,8 @@ World.prototype.init = function() {
 		if( event.keyCode === 'S'.charCodeAt(0) )	inputs.down	= false
 		if( event.keyCode === 'A'.charCodeAt(0) )	inputs.left	= false
 		if( event.keyCode === 'D'.charCodeAt(0) )	inputs.right	= false
+    //if( event.keyCode === 'R'.charCodeAt(0) ) ratat.setAnimationName('stand');
+
 		// to support arrows
 		if( event.keyCode === 38 )	inputs.up	= false
 		if( event.keyCode === 40 )	inputs.down	= false
@@ -85,6 +88,8 @@ World.prototype.render = function(renderer) {
 }
 
 World.prototype.update = function(delta) {
+  this._camera.lookAt(this.rata.character.object3d.position);
+
   var inputs	= this.rata.controls.inputs
   if( inputs.up || inputs.down ){
     this.rata.setAnimationName('run')
