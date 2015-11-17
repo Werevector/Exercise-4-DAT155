@@ -7,22 +7,21 @@ function World() {
   this._terrain = null;
   this._skyTexture = null;
   this._skybox = null;
+  
+  //Kameraposisjon relativt til player
+  this._relativeCameraPosition = new THREE.Vector3(20, 50, 20);
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 10000);
-  //this._camControls = new THREE.FirstPersonControls(this._camera);  
+  
   this._pointLight = new THREE.PointLight(0xFFFFFF, 2);
   this._ambientLight = new THREE.AmbientLight(0x222222);
-  //this._cursor = new Cursor();
+  this._cursor = null;
   
   this.mapWidth = 128;
   this.mapDepth = 128;
   this.mapMaxHeight = 25;
-  
-  this.controller = new Controller(this);
 }
 
 World.prototype.init = function() {
-  //this._camControls.lookSpeed = 0.4;
-  //this._camControls.movementSpeed = 20;
   this._scene.add(this._camera);
   
   var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
@@ -49,10 +48,15 @@ World.prototype.init = function() {
   this._terrain.name = "terrain";
   
   this.addObject(this._terrain);
-  this.addObject(this.controller.cursor._model);
+  this.addObject(this._cursor);
   
   this._player._model.position.z = this._terrain.getHeightAtPoint(this._player._model.position);
   this._scene.add(this._player._model);
+  
+  var self = this;
+  document.addEventListener("mousedown", function(event){
+    self.onMouseClick(event);
+  });
 }
 
 World.prototype.render = function(renderer) {
@@ -60,7 +64,12 @@ World.prototype.render = function(renderer) {
 }
 
 World.prototype.update = function(delta) {
-  this.controller.update(delta);
+  var pos = new THREE.Vector3();
+  pos.copy(this._player._model.position);
+  pos.add(this._relativeCameraPosition);
+  this._camera.position.set(pos.z, pos.y, pos.z);
+  this._camera.lookAt(this._player._model.position);
+  this._camera.updateProjectionMatrix();
 }
 
 World.prototype.addObject = function(object) {
@@ -68,14 +77,29 @@ World.prototype.addObject = function(object) {
   this._scene.add(object);
 }
 
-World.prototype.load = function(objMtlLoader) {
+World.prototype.load = function(objMtlLoader) {  
   var self = this;
-  /*objMtlLoader.load("resources/SnowTerrain/SnowTerrain2.obj",
-                    "resources/SnowTerrain/SnowTerrain2.mtl",
+  objMtlLoader.load("resources/StopSign/StopSign.obj",
+                    "resources/StopSign/StopSign.mtl",
                     function(obj) {
-                      self._terrain = obj;
-                    });*/
-  
-  this.controller.load(objMtlLoader);
+                      self._cursor = obj;
+                    });
   this._skyTexture = THREE.ImageUtils.loadTexture("resources/background.jpg");
+}
+
+World.prototype.onMouseClick = function(event) {
+  var vec = new THREE.Vector3(
+    (event.clientX/window.innerWidth)*2-1,
+    -(event.clientY/window.innerHeight)*2+1,
+    0.5
+  );
+  vec.unproject(this._camera);
+  var raycaster = new THREE.Raycaster(
+    this._camera.position,
+    vec.sub(this._camera.position).normalize()
+  );
+  var intersects = raycaster.intersectObjects([this._terrain]);
+  if(intersects.length > 0) {
+    this._cursor.position.copy(intersects[0].point);
+  }
 }
