@@ -118,5 +118,4 @@ THREEx.MD2CharacterRatmahatta	= function(onLoad){
 	}
 }
 
-THREEx.MD2CharacterRatmahatta.baseUrl	= '../'
-
+THREEx.MD2CharacterRatmahatta.baseUrl	= './'

@@ -9,29 +9,32 @@ function World() {
   this._skyTexture = null;
   this._groundtex = null;
   this._skybox = null;
+
+  //Kameraposisjon relativt til player
+  var zoom = 5;
+  this._relativeCameraPosition = new THREE.Vector3(zoom, zoom, zoom);
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 10000);
-  this._camera.position.y = 25;
-  this._camera.position.z = 6;
-  this._camera.position.x = 3;
+
+  // this._camera.position.y = 25;
+  // this._camera.position.z = 6;
+  // this._camera.position.x = 3;
   //this._camera.lookAt(new THREE.Vector3(0,0, -3));
   //this._camControls = new THREE.FirstPersonControls(this._camera);
-  this._pointLight = new THREE.PointLight(0xFFFFFF, 2);
-  this._ambientLight = new THREE.AmbientLight(0x222222);
-  this._cursor = new Cursor();
 
+  this._spotLight = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
+  this._ambientLight = new THREE.AmbientLight(0x222222);
+  this._cursor = null;
+
+  this.mapWidth = 256;
+  this.mapDepth = 256;
+  this.mapMaxHeight = 15;
+  this.shadowMapWidth = 2048;
+  this.shadowMapHeight = 2048;
   // this.mapWidth = 128;
   // this.mapDepth = 128;
-
-  this.mapWidth = 200;
-  this.mapDepth = 200;
-
-  this.mapMaxHeight = 20;
 }
 
 World.prototype.init = function() {
-  //this._camControls.lookSpeed = 0.1;
-  //this._camControls.movementSpeed = 50;
-
   this._scene.add(this._camera);
 
   var skyboxGeometry = new THREE.SphereGeometry(3000, 60, 60);
@@ -52,18 +55,21 @@ World.prototype.init = function() {
   this._scene.add(directionalLight);
   this._scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
 
-  //this._scene.add(this._player._model);
-
-
-	this.rata.setSkinName('ctf_r');
+  this.rata.setSkinName('ctf_r');
 	this.rata.setWeaponName('w_sshotgun');
-
 
   this._scene.add(this.rata.character.object3d);
 
-  this._pointLight.position.y = 100;
-  this._pointLight.position.z = 10;
-  this.addObject(this._pointLight);
+  this._spotLight.position.set( 0, 1500, 1000 );
+  this._spotLight.target.position.set( 0, 0, 0 );
+  // this._spotLight.castShadow = true;
+  // this._spotLight.shadowCameraNear = 1200;
+  // this._spotLight.shadowCameraFar = 2500;
+  // this._spotLight.shadowCameraFov = 50;
+  // this._spotLight.shadowBias = 0.0001;
+  // this._spotLight.shadowMapWidth = this.shadowMapWidth;
+  // this._spotLight.shadowMapHeight = this.shadowMapHeight;
+  this.addObject(this._spotLight);
   this.addObject(this._ambientLight);
 
   //////////////////////////////////////////////////////////////////////////////////
@@ -104,10 +110,10 @@ World.prototype.init = function() {
   var heightMapGeometry = new HeightMapBufferGeometry(terrainData, heightMapImg.width, heightMapImg.height);
   heightMapGeometry.scale(this.mapWidth, this.mapMaxHeight, this.mapDepth);
 
-  this._groundtex.wrapS = this._groundtex.wrapT = THREE.RepeatWrapping;
-  this._groundtex.repeat.set( 2, 1 );
+  // this._groundtex.wrapS = this._groundtex.wrapT = THREE.RepeatWrapping;
+  // this._groundtex.repeat.set( 2, 1 );
   var terrainMaterial = new THREE.MeshPhongMaterial({
-    map: this._groundtex,
+    //map: this._groundtex,
     color: 0x005500,
     shininess: 1
   });
@@ -116,8 +122,18 @@ World.prototype.init = function() {
   this._terrain.getHeightAtPoint(this.rata.character.object3d.position);
   this._camera.lookAt(this.rata.character.object3d.position);
 
+  this._terrain.name = "terrain";
+
   this.addObject(this._terrain);
-  this.addObject(this._cursor._model);
+  this.addObject(this._cursor);
+
+  //this._player._model.position.z = this._terrain.getHeightAtPoint(this._player._model.position);
+  this._scene.add(this._player._model);
+
+  var self = this;
+  document.addEventListener("mousedown", function(event){
+    self.onMouseClick(event);
+  });
 }
 
 World.prototype.render = function(renderer) {
@@ -125,7 +141,6 @@ World.prototype.render = function(renderer) {
 }
 
 World.prototype.update = function(delta) {
-  this._camera.lookAt(this.rata.character.object3d.position);
 
 
   var ratapos = this.rata.character.object3d.position;
@@ -153,6 +168,13 @@ World.prototype.update = function(delta) {
   }
   this.rata.update(delta);
   //this._camControls.update(delta);
+
+  var pos = new THREE.Vector3();
+  pos.copy(ratapos);
+  pos.add(this._relativeCameraPosition);
+  this._camera.position.set(pos.x, pos.y, pos.z);
+  this._camera.lookAt(ratapos);
+  this._camera.updateProjectionMatrix();
 }
 
 World.prototype.addObject = function(object) {
@@ -160,17 +182,33 @@ World.prototype.addObject = function(object) {
   this._scene.add(object);
 }
 
-World.prototype.load = function(objMtlLoader, jsonLoader) {
+World.prototype.load = function(objMtlLoader) {
   var self = this;
-  /*objMtlLoader.load("resources/SnowTerrain/SnowTerrain2.obj",
-                    "resources/SnowTerrain/SnowTerrain2.mtl",
+  objMtlLoader.load("resources/StopSign/StopSign.obj",
+                    "resources/StopSign/StopSign.mtl",
                     function(obj) {
-                      self._terrain = obj;
-                    });*/
-  //this._player.load(jsonLoader);
+                      self._cursor = obj;
+                    });
+
   this.rata = new THREEx.MD2CharacterRatmahatta();
 
-  this._cursor.load(objMtlLoader);
   this._skyTexture = THREE.ImageUtils.loadTexture("resources/skydome.jpg");
   this._groundtex = THREE.ImageUtils.loadTexture("resources/maptex.png");
+  }
+
+World.prototype.onMouseClick = function(event) {
+  var vec = new THREE.Vector3(
+    (event.clientX/window.innerWidth)*2-1,
+    -(event.clientY/window.innerHeight)*2+1,
+    0.5
+  );
+  vec.unproject(this._camera);
+  var raycaster = new THREE.Raycaster(
+    this._camera.position,
+    vec.sub(this._camera.position).normalize()
+  );
+  var intersects = raycaster.intersectObjects([this._terrain]);
+  if(intersects.length > 0) {
+    this._cursor.position.copy(intersects[0].point);
+  }
 }
