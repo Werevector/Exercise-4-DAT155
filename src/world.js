@@ -13,7 +13,7 @@ function World() {
   //Kameraposisjon relativt til player
   var zoom = 5;
   this._relativeCameraPosition = new THREE.Vector3(zoom, zoom, zoom);
-  this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 10000);
+  this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 5000);
 
   // this._camera.position.y = 25;
   // this._camera.position.z = 6;
@@ -37,7 +37,7 @@ function World() {
 World.prototype.init = function() {
   this._scene.add(this._camera);
 
-  var skyboxGeometry = new THREE.SphereGeometry(3000, 60, 60);
+  var skyboxGeometry = new THREE.SphereGeometry(1000, 60, 60);
   var skyboxMaterial = new THREE.MeshBasicMaterial({
     map: this._skyTexture,
     color: 0xffffff,
@@ -47,13 +47,13 @@ World.prototype.init = function() {
   this._skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
   this._scene.add(this._skybox);
 
-  var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
-  directionalLight.name = 'sun';
-  directionalLight.position.set(1, 10000, 0);
+  //var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
+  //directionalLight.name = 'sun';
+  //directionalLight.position.set(100, 1000, 0);
   //directionalLight.rotateZ(45 *Math.PI/180);
 
-  this._scene.add(directionalLight);
-  this._scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
+  //this._scene.add(directionalLight);
+  //this._scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
 
   this.rata.setSkinName('ctf_r');
 	this.rata.setWeaponName('w_sshotgun');
@@ -62,13 +62,13 @@ World.prototype.init = function() {
 
   this._spotLight.position.set( 0, 1500, 1000 );
   this._spotLight.target.position.set( 0, 0, 0 );
-  // this._spotLight.castShadow = true;
-  // this._spotLight.shadowCameraNear = 1200;
-  // this._spotLight.shadowCameraFar = 2500;
-  // this._spotLight.shadowCameraFov = 50;
-  // this._spotLight.shadowBias = 0.0001;
-  // this._spotLight.shadowMapWidth = this.shadowMapWidth;
-  // this._spotLight.shadowMapHeight = this.shadowMapHeight;
+  this._spotLight.castShadow = true;
+  this._spotLight.shadowCameraNear = 1200;
+  this._spotLight.shadowCameraFar = 2500;
+  this._spotLight.shadowCameraFov = 50;
+  this._spotLight.shadowBias = 0.0001;
+  this._spotLight.shadowMapWidth = this.shadowMapWidth;
+  this._spotLight.shadowMapHeight = this.shadowMapHeight;
   this.addObject(this._spotLight);
   this.addObject(this._ambientLight);
 
