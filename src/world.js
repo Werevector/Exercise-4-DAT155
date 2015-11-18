@@ -53,7 +53,6 @@ World.prototype.init = function() {
   var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
   directionalLight.name = 'sun';
   directionalLight.position.set(100, 1000, 0);
-  directionalLight.rotateZ(45 *Math.PI/180);
 
   this._scene.add(directionalLight);
   this._scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
@@ -63,7 +62,7 @@ World.prototype.init = function() {
 
   this._scene.add(this.rata.character.object3d);
 
-  this._spotLight.position.set( 0, 1500, 1000 );
+  this._spotLight.position.set( 0, 500, 1000 );
   this._spotLight.target.position.set( 0, 0, 0 );
   this._spotLight.castShadow = true;
   this._spotLight.shadowCameraNear = 1200;
@@ -74,6 +73,8 @@ World.prototype.init = function() {
   this._spotLight.shadowMapHeight = this.shadowMapHeight;
   this.addObject(this._spotLight);
   this.addObject(this._ambientLight);
+
+  this.rata.character.object3d.castShadow = true;
 
   //////////////////////////////////////////////////////////////////////////////////
 	//		controls.input based on keyboard				//
@@ -161,7 +162,6 @@ World.prototype.update = function(delta) {
   //if(ratapos.y = terrheight){
     //this.rata.character.object3d.position.y = terrheight;
   //}
-  console.log(diff);
   if(ratapos.y > terrheight){
     this.rata.character.object3d.position.y -= (0.5+diff)*delta;
   }
