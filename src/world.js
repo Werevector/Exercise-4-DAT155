@@ -10,19 +10,12 @@ function World(renderer) {
   this._skyTexture = null;
   this._groundtex = null;
   this._skybox = null;
-
-  this._grasspos = [];
+  this._water = new Water(1.5);
 
   //Kameraposisjon relativt til player
   var zoom = 3;
   this._relativeCameraPosition = new THREE.Vector3(zoom, zoom, zoom);
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 5000);
-
-  // this._camera.position.y = 25;
-  // this._camera.position.z = 6;
-  // this._camera.position.x = 3;
-  //this._camera.lookAt(new THREE.Vector3(0,0, -3));
-  //this._camControls = new THREE.FirstPersonControls(this._camera);
 
   this._spotLight = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
   this._ambientLight = new THREE.AmbientLight(0x222222);
@@ -33,8 +26,6 @@ function World(renderer) {
   this.mapMaxHeight = 15;
   this.shadowMapWidth = 2048;
   this.shadowMapHeight = 2048;
-  // this.mapWidth = 128;
-  // this.mapDepth = 128;
 }
 
 World.prototype.init = function() {
@@ -134,10 +125,12 @@ World.prototype.init = function() {
 
   this.addObject(this._terrain);
   this.addObject(this._cursor);
-
-  //this._player._model.position.z = this._terrain.getHeightAtPoint(this._player._model.position);
+  
   this._scene.add(this._player._model);
-
+  
+  this._water.init();
+  this._scene.add(this._water.mesh);
+  
   var self = this;
   document.addEventListener("mousedown", function(event){
     self.onMouseClick(event);
@@ -158,18 +151,12 @@ World.prototype.update = function(delta) {
   var terrheight = this._terrain.getHeightAtPoint(ratapos);
   var diff = Math.abs(ratapos.y - terrheight)*10;
 
-  //if(ratapos.y = terrheight){
-    //this.rata.character.object3d.position.y = terrheight;
-  //}
-  console.log(diff);
   if(ratapos.y > terrheight){
     this.rata.character.object3d.position.y -= (0.5+diff)*delta;
   }
   if(ratapos.y < terrheight){
     this.rata.character.object3d.position.y += (0.5+diff)*delta;
   }
-
-  //this.rata.character.object3d.position.y = this._terrain.getHeightAtPoint(ratapos);
 
   var inputs	= this.rata.controls.inputs
   if( inputs.up || inputs.down ){
@@ -178,7 +165,6 @@ World.prototype.update = function(delta) {
     this.rata.setAnimationName('stand')
   }
   this.rata.update(delta);
-  //this._camControls.update(delta);
 
   var pos = new THREE.Vector3();
   pos.copy(ratapos);
@@ -202,7 +188,7 @@ World.prototype.load = function(objMtlLoader) {
                     });
 
   this.rata = new THREEx.MD2CharacterRatmahatta();
-
+  this._water.load();
   this._skyTexture = THREE.ImageUtils.loadTexture("resources/skydome.jpg");
   this._groundtex = THREE.ImageUtils.loadTexture("resources/grass.jpg");
   }
