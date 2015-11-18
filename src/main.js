@@ -23,6 +23,8 @@ function onLoad(){
   //Set up the three.js renderer
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(width, height);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   document.body.appendChild(renderer.domElement);
 
   //fps counter

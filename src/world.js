@@ -12,13 +12,15 @@ function World() {
   this._relativeCameraPosition = new THREE.Vector3(20, 50, 20);
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 10000);
   
-  this._pointLight = new THREE.PointLight(0xFFFFFF, 2);
+  this._spotLight = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
   this._ambientLight = new THREE.AmbientLight(0x222222);
   this._cursor = null;
   
   this.mapWidth = 256;
   this.mapDepth = 256;
   this.mapMaxHeight = 15;
+  this.shadowMapWidth = 2048;
+  this.shadowMapHeight = 2048;
 }
 
 World.prototype.init = function() {
@@ -33,9 +35,16 @@ World.prototype.init = function() {
   this._skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
   this._scene.add(this._skybox);
 
-  this._pointLight.position.y = 40;
-  this._pointLight.position.z = 10;
-  this.addObject(this._pointLight);
+  this._spotLight.position.set( 0, 1500, 1000 );
+  this._spotLight.target.position.set( 0, 0, 0 );
+  this._spotLight.castShadow = true;
+  this._spotLight.shadowCameraNear = 1200;
+  this._spotLight.shadowCameraFar = 2500;
+  this._spotLight.shadowCameraFov = 50;
+  this._spotLight.shadowBias = 0.0001;
+  this._spotLight.shadowMapWidth = this.shadowMapWidth;
+  this._spotLight.shadowMapHeight = this.shadowMapHeight;
+  this.addObject(this._spotLight);
   this.addObject(this._ambientLight);
   
   //Last inn heightmap
