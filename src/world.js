@@ -21,9 +21,10 @@ function World(renderer) {
   this._ambientLight = new THREE.AmbientLight(0x222222);
   this._cursor = null;
 
-  this.mapWidth = 256;
-  this.mapDepth = 256;
-  this.mapMaxHeight = 15;
+  var S = 1;
+  this.mapWidth = 256 * S;
+  this.mapDepth = 256 * S;
+  this.mapMaxHeight = 15 * S;
   this.shadowMapWidth = 2048;
   this.shadowMapHeight = 2048;
 }
@@ -43,6 +44,7 @@ World.prototype.init = function() {
 
   var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
   directionalLight.name = 'sun';
+  //directionalLight.intensity = 1;
   directionalLight.position.set(100, 1000, 0);
 
   this._scene.add(directionalLight);
@@ -53,8 +55,8 @@ World.prototype.init = function() {
 
   this._scene.add(this.rata.character.object3d);
 
-  this._spotLight.position.set( 0, 500, 1000 );
-  this._spotLight.target.position.set( 0, 0, 0 );
+  this._spotLight.position.set( 1000, 500, -1000 );
+  this._spotLight.target.position.set( 0, 0, 1000 );
   this._spotLight.castShadow = true;
   this._spotLight.shadowCameraNear = 1200;
   this._spotLight.shadowCameraFar = 2500;
@@ -63,7 +65,7 @@ World.prototype.init = function() {
   this._spotLight.shadowMapWidth = this.shadowMapWidth;
   this._spotLight.shadowMapHeight = this.shadowMapHeight;
   this.addObject(this._spotLight);
-  this.addObject(this._ambientLight);
+  // this.addObject(this._ambientLight);
 
   this.rata.character.object3d.castShadow = true;
 
@@ -107,8 +109,8 @@ World.prototype.init = function() {
 
   this._groundtex.wrapS	= THREE.RepeatWrapping;
 	this._groundtex.wrapT	= THREE.RepeatWrapping;
-	this._groundtex.repeat.x= 60
-	this._groundtex.repeat.y= 60
+	this._groundtex.repeat.x= 80
+	this._groundtex.repeat.y= 80
 	this._groundtex.anisotropy = this._renderer.getMaxAnisotropy();
 
 
