@@ -1,8 +1,9 @@
 "use strict";
 
-function World() {
+function World(renderer) {
   this._scene = new THREE.Scene();
   this._objects = [];
+  this._renderer = renderer;
   this._player = new Player(this._scene);
   this.rata = null;
   this._terrain = null;
@@ -10,8 +11,10 @@ function World() {
   this._groundtex = null;
   this._skybox = null;
 
+  this._grasspos = [];
+
   //Kameraposisjon relativt til player
-  var zoom = 5;
+  var zoom = 3;
   this._relativeCameraPosition = new THREE.Vector3(zoom, zoom, zoom);
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 5000);
 
@@ -47,13 +50,13 @@ World.prototype.init = function() {
   this._skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
   this._scene.add(this._skybox);
 
-  //var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
-  //directionalLight.name = 'sun';
-  //directionalLight.position.set(100, 1000, 0);
-  //directionalLight.rotateZ(45 *Math.PI/180);
+  var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
+  directionalLight.name = 'sun';
+  directionalLight.position.set(100, 1000, 0);
+  directionalLight.rotateZ(45 *Math.PI/180);
 
-  //this._scene.add(directionalLight);
-  //this._scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
+  this._scene.add(directionalLight);
+  this._scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
 
   this.rata.setSkinName('ctf_r');
 	this.rata.setWeaponName('w_sshotgun');
@@ -110,11 +113,16 @@ World.prototype.init = function() {
   var heightMapGeometry = new HeightMapBufferGeometry(terrainData, heightMapImg.width, heightMapImg.height);
   heightMapGeometry.scale(this.mapWidth, this.mapMaxHeight, this.mapDepth);
 
-  // this._groundtex.wrapS = this._groundtex.wrapT = THREE.RepeatWrapping;
-  // this._groundtex.repeat.set( 2, 1 );
+  this._groundtex.wrapS	= THREE.RepeatWrapping;
+	this._groundtex.wrapT	= THREE.RepeatWrapping;
+	this._groundtex.repeat.x= 60
+	this._groundtex.repeat.y= 60
+	this._groundtex.anisotropy = this._renderer.getMaxAnisotropy();
+
+
   var terrainMaterial = new THREE.MeshPhongMaterial({
-    //map: this._groundtex,
-    color: 0x005500,
+    map: this._groundtex,
+    color: 0x555555,
     shininess: 1
   });
   this._terrain = new HeightMapMesh(heightMapGeometry, terrainMaterial);
@@ -134,6 +142,9 @@ World.prototype.init = function() {
   document.addEventListener("mousedown", function(event){
     self.onMouseClick(event);
   });
+
+  //for(var i = 0; i )
+
 }
 
 World.prototype.render = function(renderer) {
@@ -193,7 +204,7 @@ World.prototype.load = function(objMtlLoader) {
   this.rata = new THREEx.MD2CharacterRatmahatta();
 
   this._skyTexture = THREE.ImageUtils.loadTexture("resources/skydome.jpg");
-  this._groundtex = THREE.ImageUtils.loadTexture("resources/maptex.png");
+  this._groundtex = THREE.ImageUtils.loadTexture("resources/grass.jpg");
   }
 
 World.prototype.onMouseClick = function(event) {
