@@ -7,9 +7,14 @@ function World(renderer) {
   this._player = new Player(this._scene);
   this.rata = null;
   this._terrain = null;
+
   this._skyTexture = null;
   this._groundtex = null;
+
+  this._groundbm = null;
+
   this._skybox = null;
+
   this._water = new Water(1.5);
 
   //Kameraposisjon relativt til player
@@ -17,7 +22,7 @@ function World(renderer) {
   this._relativeCameraPosition = new THREE.Vector3(zoom, zoom, zoom);
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 5000);
 
-  this._spotLight = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
+  this._spotLight = new THREE.SpotLight(0xffff88, 1, 0, Math.PI / 2, 1);
   this._ambientLight = new THREE.AmbientLight(0x222222);
   this._cursor = null;
 
@@ -113,10 +118,17 @@ World.prototype.init = function() {
 	this._groundtex.repeat.y= 80
 	this._groundtex.anisotropy = this._renderer.getMaxAnisotropy();
 
+  this._groundbm.wrapS	= THREE.RepeatWrapping;
+  this._groundbm.wrapT	= THREE.RepeatWrapping;
+  this._groundbm.repeat.x= 80
+  this._groundbm.repeat.y= 80
+  this._groundbm.anisotropy = this._renderer.getMaxAnisotropy();
+
 
   var terrainMaterial = new THREE.MeshPhongMaterial({
     map: this._groundtex,
-    color: 0x555555,
+    //bumpMap: this._groundbm,
+    color: 0x888888,
     shininess: 1
   });
   this._terrain = new HeightMapMesh(heightMapGeometry, terrainMaterial);
@@ -194,6 +206,7 @@ World.prototype.load = function(objMtlLoader) {
   this._water.load();
   this._skyTexture = THREE.ImageUtils.loadTexture("resources/skydome.jpg");
   this._groundtex = THREE.ImageUtils.loadTexture("resources/grass.jpg");
+  this._groundbm = THREE.ImageUtils.loadTexture("resources/dirtbm.jpg");
   }
 
 World.prototype.onMouseClick = function(event) {
