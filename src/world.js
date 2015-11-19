@@ -6,23 +6,32 @@ function World(renderer) {
   this._renderer = renderer;
   this._player = new Player();
   this._terrain = null;
+
   this._skyTexture = null;
   this._groundtex = null;
+
+  this._environment = new Environment();
+
+  this._groundbm = null;
+
+  this._cameraZoom = 5;
+
   this._skybox = null;
+
   this._water = new Water(1.5);
 
   //Kameraposisjon relativt til player
-  var zoom = 3;
-  this._relativeCameraPosition = new THREE.Vector3(zoom, zoom, zoom);
+  this._relativeCameraPosition = new THREE.Vector3(this._cameraZoom, this._cameraZoom, this._cameraZoom);
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 5000);
 
   this._spotLight = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
   this._ambientLight = new THREE.AmbientLight(0x222222);
   this._cursor = null;
 
-  this.mapWidth = 256;
-  this.mapDepth = 256;
-  this.mapMaxHeight = 15;
+  var S = 1;
+  this.mapWidth = 256 * S;
+  this.mapDepth = 256 * S;
+  this.mapMaxHeight = 15 * S;
   this.shadowMapWidth = 2048;
   this.shadowMapHeight = 2048;
 }
@@ -42,11 +51,12 @@ World.prototype.init = function() {
 
   var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
   directionalLight.name = 'sun';
+  //directionalLight.intensity = 1;
   directionalLight.position.set(100, 1000, 0);
-  directionalLight.rotateZ(45 *Math.PI/180);
 
   this._scene.add(directionalLight);
   this._scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
+
 
   this._spotLight.position.set( 0, 1500, 1000 );
   this._spotLight.target.position.set( 0, 0, 0 );
@@ -57,8 +67,8 @@ World.prototype.init = function() {
   this._spotLight.shadowBias = 0.0001;
   this._spotLight.shadowMapWidth = this.shadowMapWidth;
   this._spotLight.shadowMapHeight = this.shadowMapHeight;
-  this.addObject(this._spotLight);
-  this.addObject(this._ambientLight);
+  //this.addObject(this._spotLight);
+  // this.addObject(this._ambientLight);
 
   //Last inn heightmap
   var heightMapImg = document.getElementById('heightmap');
@@ -68,33 +78,57 @@ World.prototype.init = function() {
 
   this._groundtex.wrapS	= THREE.RepeatWrapping;
 	this._groundtex.wrapT	= THREE.RepeatWrapping;
-	this._groundtex.repeat.x= 60
-	this._groundtex.repeat.y= 60
+	this._groundtex.repeat.x= 80
+	this._groundtex.repeat.y= 80
 	this._groundtex.anisotropy = this._renderer.getMaxAnisotropy();
+
+  this._groundbm.wrapS	= THREE.RepeatWrapping;
+  this._groundbm.wrapT	= THREE.RepeatWrapping;
+  this._groundbm.repeat.x= 80
+  this._groundbm.repeat.y= 80
+  this._groundbm.anisotropy = this._renderer.getMaxAnisotropy();
 
 
   var terrainMaterial = new THREE.MeshPhongMaterial({
     map: this._groundtex,
-    color: 0x555555,
+    //bumpMap: this._groundbm,
+    color: 0x888888,
     shininess: 1
   });
   this._terrain = new HeightMapMesh(heightMapGeometry, terrainMaterial);
+
+  var tree = this._environment._rock;
+  tree.position.set(0,5,0);
+  this._scene.add(tree);
+
+  this._environment.setupRocks(this._terrain, this._scene);
+  this._environment.setupTrees(this._terrain, this._scene);
+
   this._camera.lookAt(this._player.getPosition());
 
   this._terrain.name = "terrain";
 
   this.addObject(this._terrain);
   this.addObject(this._cursor);
-  
+
   this._water.init();
   this._scene.add(this._water.mesh);
-  
+
   this._player.init(this._scene, this._terrain);
-  
+
   var self = this;
   document.addEventListener("mousedown", function(event){
     self.onMouseClick(event);
   });
+
+  var rel = this._relativeCameraPosition;
+  window.addEventListener("mousewheel", function(event){
+    var delta = -(event.wheelDelta/100);
+    rel.x += delta;
+    rel.y += delta;
+    rel.z += delta;
+  });
+
 }
 
 World.prototype.render = function(renderer) {
@@ -126,8 +160,11 @@ World.prototype.load = function(objMtlLoader) {
                       self._cursor = obj;
                     });
   this._water.load();
+  this._environment.loadTreeModel(objMtlLoader);
+  this._environment.loadRockModel(objMtlLoader);
   this._skyTexture = THREE.ImageUtils.loadTexture("resources/skydome.jpg");
   this._groundtex = THREE.ImageUtils.loadTexture("resources/grass.jpg");
+  this._groundbm = THREE.ImageUtils.loadTexture("resources/dirtbm.jpg");
   this._player.load();
   }
 

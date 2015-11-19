@@ -79,13 +79,13 @@ Player.prototype.setGoal = function(goal) {
 
 Player.prototype.update = function(delta) {
 	var pos = this.getPosition();
-	
+
 	//Automatic controls (Player walks toward goal)
-	
+
 	//Reset the inputs.
 	var inputs = this._model.controls.inputs;
 	inputs.up = inputs.left = inputs.right = false;
-	
+
 	// Make the player go towards the goal if the player is too far away.
 	var epsilon = 0.5;
 	if (Math.abs(pos.x - this._goal.x) > epsilon
@@ -97,11 +97,11 @@ Player.prototype.update = function(delta) {
 		rot.multiplyVector3(playerDir3);
 		playerDir3.applyAxisAngle(new THREE.Vector3(0,1,0), -Math.PI / 2);
 		var playerDir = new THREE.Vector2(playerDir3.x,	playerDir3.z);
-		
+
 		//Direction from player to goal
 		var goalDir = new THREE.Vector2(this._goal.x - pos.x, this._goal.y
 				- pos.z);
-		
+
 		//Angle between the two directions
 		var angle = playerDir.dot(goalDir)
 				/ (playerDir.length() * goalDir.length());
@@ -112,10 +112,10 @@ Player.prototype.update = function(delta) {
 		} else if (angle < Math.PI * 2 - epsilon) {
 			inputs.left = true;
 		}
-		
+
 		inputs.up = true;
 	}
-	
+
 	//Make player follow the terrain and walk smoothly
 
 	var height = this._terrain.getHeightAtPoint(pos);
