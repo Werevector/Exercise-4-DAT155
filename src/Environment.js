@@ -14,7 +14,7 @@ Environment.prototype.loadTreeModel = function(objectMaterialLoader) {
     function(loadedObject) {
       "use strict";
       // Custom function to handle what's supposed to happen once we've loaded the model
-
+      loadedObject.traverse( function( node ) { if ( node instanceof THREE.Mesh ) { node.castShadow = true; } } );
       var bbox = new THREE.Box3().setFromObject(loadedObject);
       console.log(bbox);
       self._tree = loadedObject;
@@ -29,7 +29,7 @@ Environment.prototype.loadRockModel = function(objectMaterialLoader) {
     function(loadedObject) {
       "use strict";
       // Custom function to handle what's supposed to happen once we've loaded the model
-
+      loadedObject.traverse( function( node ) { if ( node instanceof THREE.Mesh ) { node.castShadow = true; } } );
       var bbox = new THREE.Box3().setFromObject(loadedObject);
       console.log(bbox);
       self._rock = loadedObject;
@@ -99,6 +99,7 @@ Environment.prototype.setupTrees = function(terrain, scene) {
 
     // We should know where the bottom of our object is
     object.position.copy(generatedAndValidPositions[i]);
+    object.castShadow = true;
     terrheight = terrain.getHeightAtPoint(object.position);
     object.position.y = terrheight + 1.5;//bbox.min.y * terrheight;
 

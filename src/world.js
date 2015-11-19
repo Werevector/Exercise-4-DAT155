@@ -32,8 +32,10 @@ function World(renderer) {
   this.mapWidth = 256 * S;
   this.mapDepth = 256 * S;
   this.mapMaxHeight = 15 * S;
-  this.shadowMapWidth = 2048;
-  this.shadowMapHeight = 2048;
+  // this.shadowMapWidth = 2048;
+  // this.shadowMapHeight = 2048;
+  this.shadowMapWidth = 4096;
+  this.shadowMapHeight = 4096;
 }
 
 World.prototype.init = function() {
@@ -52,23 +54,23 @@ World.prototype.init = function() {
   var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
   directionalLight.name = 'sun';
   //directionalLight.intensity = 1;
-  directionalLight.position.set(100, 1000, 0);
+  directionalLight.position.set(50, 50, 0);
+  directionalLight.shadowCameraVisible = true;
+  directionalLight.castShadow = true;
+  directionalLight.shadowCameraNear = 10;
+  directionalLight.shadowCameraFar = 2000;
+  directionalLight.shadowCameraFov = 90;
+  directionalLight.shadowBias = 0.0001;
+  directionalLight.shadowMapWidth = this.shadowMapWidth;
+  directionalLight.shadowMapHeight = this.shadowMapHeight;
+  directionalLight.shadowCameraLeft = -100; // or whatever value works for the scale of your scene
+  directionalLight.shadowCameraRight = 150;
+  directionalLight.shadowCameraTop = 100;
+  directionalLight.shadowCameraBottom = -100;
+  directionalLight.shadowDarkness = 0.5;
 
   this._scene.add(directionalLight);
   this._scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
-
-
-  this._spotLight.position.set( 0, 1500, 1000 );
-  this._spotLight.target.position.set( 0, 0, 0 );
-  this._spotLight.castShadow = true;
-  this._spotLight.shadowCameraNear = 1200;
-  this._spotLight.shadowCameraFar = 2500;
-  this._spotLight.shadowCameraFov = 50;
-  this._spotLight.shadowBias = 0.0001;
-  this._spotLight.shadowMapWidth = this.shadowMapWidth;
-  this._spotLight.shadowMapHeight = this.shadowMapHeight;
-  //this.addObject(this._spotLight);
-  // this.addObject(this._ambientLight);
 
   //Last inn heightmap
   var heightMapImg = document.getElementById('heightmap');
@@ -103,6 +105,7 @@ World.prototype.init = function() {
 
   this._terrain.name = "terrain";
 
+  this._terrain.receiveShadow = true;
   this.addObject(this._terrain);
   this.addObject(this._cursor);
 
@@ -154,6 +157,11 @@ World.prototype.load = function(objMtlLoader) {
                     function(obj) {
                       obj.scale.set(0.2, 0.2, 0.2);
                       obj.rotateY(-0.7);
+                      obj.traverse( function( node ) {
+                        if ( node instanceof THREE.Mesh ){
+                          node.castShadow = true;
+                        }
+                        });
                       self._cursor = obj;
                     });
   this._water.load();

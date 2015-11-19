@@ -13,6 +13,7 @@ Player.prototype.load = function() {
 Player.prototype.init = function(scene, terrain) {
 	this._terrain = terrain;
 	this._model.setSkinName('ctf_r');
+	this._model.character.object3d.castShadow = true;
 	this._model.setWeaponName('w_sshotgun');
 	scene.add(this._model.character.object3d);
 	this._model.character.object3d.position.y = this._terrain
