@@ -11,6 +11,8 @@ function World(renderer) {
   this._skyTexture = null;
   this._groundtex = null;
 
+  this._environment = new Environment();
+
   this._groundbm = null;
 
   this._skybox = null;
@@ -18,11 +20,11 @@ function World(renderer) {
   this._water = new Water(1.5);
 
   //Kameraposisjon relativt til player
-  var zoom = 3;
+  var zoom = 10;
   this._relativeCameraPosition = new THREE.Vector3(zoom, zoom, zoom);
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 5000);
 
-  this._spotLight = new THREE.SpotLight(0xffff88, 1, 0, Math.PI / 2, 1);
+  this._spotLight = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
   this._ambientLight = new THREE.AmbientLight(0x222222);
   this._cursor = null;
 
@@ -60,6 +62,8 @@ World.prototype.init = function() {
 
   this._scene.add(this.rata.character.object3d);
 
+
+
   this._spotLight.position.set( 1000, 500, -1000 );
   this._spotLight.target.position.set( 0, 0, 1000 );
   this._spotLight.castShadow = true;
@@ -69,7 +73,7 @@ World.prototype.init = function() {
   this._spotLight.shadowBias = 0.0001;
   this._spotLight.shadowMapWidth = this.shadowMapWidth;
   this._spotLight.shadowMapHeight = this.shadowMapHeight;
-  this.addObject(this._spotLight);
+  //this.addObject(this._spotLight);
   // this.addObject(this._ambientLight);
 
   this.rata.character.object3d.castShadow = true;
@@ -132,6 +136,15 @@ World.prototype.init = function() {
     shininess: 1
   });
   this._terrain = new HeightMapMesh(heightMapGeometry, terrainMaterial);
+
+
+  var tree = this._environment._tree;
+  tree.position.set(0,5,0);
+  //this._scene.add(tree);
+
+  this._environment.setupTrees(this._terrain, this._scene);
+
+
   this.rata.character.object3d.position.y =
   this._terrain.getHeightAtPoint(this.rata.character.object3d.position);
   this._camera.lookAt(this.rata.character.object3d.position);
@@ -204,6 +217,7 @@ World.prototype.load = function(objMtlLoader) {
 
   this.rata = new THREEx.MD2CharacterRatmahatta();
   this._water.load();
+  this._environment.loadTreeModel(objMtlLoader);
   this._skyTexture = THREE.ImageUtils.loadTexture("resources/skydome.jpg");
   this._groundtex = THREE.ImageUtils.loadTexture("resources/grass.jpg");
   this._groundbm = THREE.ImageUtils.loadTexture("resources/dirtbm.jpg");
