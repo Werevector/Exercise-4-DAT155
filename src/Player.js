@@ -74,7 +74,7 @@ Player.prototype.update = function(delta) {
 			var rot = new THREE.Matrix4();
 			rot.extractRotation(this._model.character.object3d.matrix);
 			var playerDir3 = new THREE.Vector3(0, 0, 1);
-			rot.multiplyVector3(playerDir3);
+			playerDir3.applyMatrix4(rot);
 			playerDir3.applyAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2);
 			var playerDir = new THREE.Vector2(playerDir3.x, playerDir3.z);
 
