@@ -118,9 +118,11 @@ World.prototype.addObject = function(object) {
 
 World.prototype.load = function(objMtlLoader) {
   var self = this;
-  objMtlLoader.load("resources/StopSign/StopSign.obj",
-                    "resources/StopSign/StopSign.mtl",
+  objMtlLoader.load("resources/models/flag.obj",
+                    "resources/models/flag.mtl",
                     function(obj) {
+                      obj.scale.set(0.2, 0.2, 0.2);
+                      obj.rotateY(-0.7);
                       self._cursor = obj;
                     });
   this._water.load();
