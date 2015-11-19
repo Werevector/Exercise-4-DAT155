@@ -96,11 +96,6 @@ World.prototype.init = function() {
     shininess: 1
   });
   this._terrain = new HeightMapMesh(heightMapGeometry, terrainMaterial);
-
-  var tree = this._environment._rock;
-  tree.position.set(0,5,0);
-  this._scene.add(tree);
-
   this._environment.setupRocks(this._terrain, this._scene);
   this._environment.setupTrees(this._terrain, this._scene);
 

@@ -180,7 +180,7 @@ Environment.prototype.setupRocks = function(terrain, scene) {
     // We should know where the bottom of our object is
     object.position.copy(generatedAndValidPositions[i]);
     terrheight = terrain.getHeightAtPoint(object.position);
-    object.position.y = terrheight + 0.3;//bbox.min.y * terrheight;
+    object.position.y = terrheight;//bbox.min.y * terrheight;
 
     object.scale.set(
       generatedAndValidScales[i],
