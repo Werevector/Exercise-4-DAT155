@@ -1,12 +1,72 @@
-function Environment() {
+"use strict";
+
+function Environment(terrain, worldMapWidth, worldMapDepth, worldMapMaxHeight) {
   this._trees = null;
   this._tree = null;
 
   this._rocks = null;
   this._rock = null;
+  
+  var maxNumObjects = 2000;
+  var spreadCenter = new THREE.Vector3(0.1*worldMapWidth, 0, 0.2*worldMapDepth);
+  var spreadRadius = 0.2*worldMapWidth;
+  //var geometryScale = 30;
+
+  var minHeight = 0.2*worldMapMaxHeight;
+  var maxHeight = 0.6*worldMapMaxHeight;
+  var maxAngle = 30 * Math.PI / 180;
+
+  var scaleMean = 0.5;
+  var scaleSpread = 5;
+  var scaleMinimum = 0.1;
+
+  var generatedAndValidPositions = generateRandomData(maxNumObjects,
+          //generateGaussPositionAndCorrectHeight.bind(null, terrain, spreadCenter, spreadRadius),
+          // The previous is functionally the same as
+          function() {
+                return generateGaussPositionAndCorrectHeight(terrain, spreadCenter, spreadRadius)
+           },
+
+          // If you want to accept every position just make function that returns true
+          positionValidator.bind(null, terrain, minHeight, maxHeight, maxAngle)
+  );
+  this._translationArray = makeFloat32Array(generatedAndValidPositions);
+
+  var generatedAndValidScales = generateRandomData(generatedAndValidPositions.length,
+
+          // Generator function
+          function() { return Math.abs(scaleMean + randomGauss()*scaleSpread); },
+
+          // Validator function
+          function(scale) { return scale > scaleMinimum; }
+  );
+  this._scaleArray = makeFloat32Array(generatedAndValidScales);
+
+  // Lots of other possibilities, eg: custom color per object, objects changing (requires dynamic
+  // InstancedBufferAttribute, see its setDynamic), but require more shader magic.
+  this._translationAttribute = new THREE.InstancedBufferAttribute(this._translationArray, 3, 1);
+  this._scaleAttribute = new THREE.InstancedBufferAttribute(this._scaleArray, 1, 1);
+
+  this._instancedMaterial = new THREE.ShaderMaterial({
+      uniforms: THREE.UniformsUtils.merge(
+              //THREE.UniformsLib['lights'],
+              {
+                  color: {type: "c", value: new THREE.Color(Math.random(), Math.random(), Math.random())}
+              }
+      ),
+      vertexShader: document.getElementById("instanced-vshader").textContent,
+      fragmentShader: THREE.ShaderLib['basic'].fragmentShader,
+
+      //lights: true
+  });
+  
+  console.log(this._instancedMaterial.vertexShader);
+  console.log(this._instancedMaterial.fragmentShader);
+  
+  this._instancedRocks = null;
 }
 
-Environment.prototype.loadTreeModel = function(objectMaterialLoader) {
+Environment.prototype.loadTreeModel = function(objectMaterialLoader, terrain) {
   var self = this;
   objectMaterialLoader.load(
     'resources/models/lowpolytree.obj',
@@ -22,6 +82,7 @@ Environment.prototype.loadTreeModel = function(objectMaterialLoader) {
 
       var bbox = new THREE.Box3().setFromObject(loadedObject);
       self._tree = loadedObject;
+      self.setupTrees(terrain);
     });
 }
 
@@ -40,7 +101,63 @@ Environment.prototype.loadRockModel = function(objectMaterialLoader) {
     });
 }
 
-Environment.prototype.setupTrees = function(terrain, scene) {
+Environment.prototype.loadInstancedRocks = function(objectMaterialLoader, terrain) {
+	var self = this;
+    objectMaterialLoader.load(
+    	    'resources/models/Rock1.obj',
+    	    'resources/models/Rock1.mtl',
+            function (object) {
+                "use strict";
+                // Custom function to handle what's supposed to happen once we've loaded the model
+
+                // Traverse the model objects and replace their geometry with an instanced copy
+                // Each child in the geometry with a custom color(, and so forth) will be drawn with a
+                object.traverse(function(node) {
+                    if (node instanceof THREE.Mesh) {
+                        console.log('mesh', node);
+
+                        var oldGeometry = node.geometry;
+
+                        node.geometry = new THREE.InstancedBufferGeometry();
+
+                        // Copy the the prevoius geometry
+                        node.geometry.fromGeometry(oldGeometry);
+
+                        // Associate our generated values with named attributes.
+                        node.geometry.addAttribute("translate", self._translationAttribute);
+                        node.geometry.addAttribute("scale", self._scaleAttribute);
+
+                        //node.geometry.scale(geometryScale, geometryScale, geometryScale);
+
+                        // A hack to avoid custom making a boundary box
+                        node.frustumCulled = false;
+
+                        // Set up correct material. We must replace whatever has been set with a fitting material
+                        // that can be used for instancing.
+                        var oldMaterial = node.material;
+                        console.log('material', oldMaterial);
+
+                        node.material = self._instancedMaterial.clone();
+                        if ("color" in oldMaterial) {
+                            node.material.uniforms['diffuse'] = {
+                                type: 'c',
+                                value: oldMaterial.color
+                            };
+                        }
+                    }
+                });
+
+                var bbox = new THREE.Box3().setFromObject(object);
+
+                // We should know where the bottom of our object is
+                object.position.y -= bbox.min.y;
+
+                object.name = "RockInstanced";
+                terrain.add(object);
+            });
+}
+
+Environment.prototype.setupTrees = function(terrain) {
   "use strict";
 
   var worldMapWidth = 250;
@@ -115,7 +232,7 @@ Environment.prototype.setupTrees = function(terrain, scene) {
 
     object.name = "LowPolyTree";
     //terrain.add(object);
-    scene.add(object);
+    terrain.add(object);
     //this._trees = object;
   }
 }

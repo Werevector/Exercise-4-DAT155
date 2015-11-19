@@ -10,7 +10,7 @@ function World(renderer) {
   this._skyTexture = null;
   this._groundtex = null;
 
-  this._environment = new Environment();
+  this._environment = null;
 
   this._groundbm = null;
 
@@ -72,34 +72,13 @@ World.prototype.init = function() {
   this._scene.add(directionalLight);
   this._scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
 
-  //Last inn heightmap
-  var heightMapImg = document.getElementById('heightmap');
-  var terrainData = getPixelValues(heightMapImg, 'r');
-  var heightMapGeometry = new HeightMapBufferGeometry(terrainData, heightMapImg.width, heightMapImg.height);
-  heightMapGeometry.scale(this.mapWidth, this.mapMaxHeight, this.mapDepth);
-
-  this._groundtex.wrapS	= THREE.RepeatWrapping;
-	this._groundtex.wrapT	= THREE.RepeatWrapping;
-	this._groundtex.repeat.x= 80
-	this._groundtex.repeat.y= 80
-	this._groundtex.anisotropy = this._renderer.getMaxAnisotropy();
-
-  this._groundbm.wrapS	= THREE.RepeatWrapping;
-  this._groundbm.wrapT	= THREE.RepeatWrapping;
-  this._groundbm.repeat.x= 80
-  this._groundbm.repeat.y= 80
-  this._groundbm.anisotropy = this._renderer.getMaxAnisotropy();
-
-
   var terrainMaterial = new THREE.MeshPhongMaterial({
     map: this._groundtex,
     //bumpMap: this._groundbm,
     color: 0x888888,
     shininess: 1
   });
-  this._terrain = new HeightMapMesh(heightMapGeometry, terrainMaterial);
-  this._environment.setupRocks(this._terrain, this._scene);
-  this._environment.setupTrees(this._terrain, this._scene);
+  this._terrain.material = terrainMaterial;
 
   this._camera.lookAt(this._player.getPosition());
 
@@ -132,7 +111,6 @@ World.prototype.init = function() {
   });
 
   this._scene.fog = new THREE.Fog( 0xefd1b5, 0.0025, 200 );
-
 }
 
 World.prototype.render = function(renderer) {
@@ -169,13 +147,37 @@ World.prototype.load = function(objMtlLoader) {
                       self._cursor = obj;
                     });
   this._water.load();
-  this._environment.loadTreeModel(objMtlLoader);
-  this._environment.loadRockModel(objMtlLoader);
+
   this._skyTexture = THREE.ImageUtils.loadTexture("resources/skydome.jpg");
   this._groundtex = THREE.ImageUtils.loadTexture("resources/grass.jpg");
   this._groundbm = THREE.ImageUtils.loadTexture("resources/dirtbm.jpg");
   this._player.load();
-  }
+  
+  var heightMapImg = document.getElementById('heightmap');
+  var terrainData = getPixelValues(heightMapImg, 'r');
+  var heightMapGeometry = new HeightMapBufferGeometry(terrainData, heightMapImg.width, heightMapImg.height);
+  heightMapGeometry.scale(this.mapWidth, this.mapMaxHeight, this.mapDepth);
+
+  this._groundtex.wrapS	= THREE.RepeatWrapping;
+	this._groundtex.wrapT	= THREE.RepeatWrapping;
+	this._groundtex.repeat.x= 80
+	this._groundtex.repeat.y= 80
+	this._groundtex.anisotropy = this._renderer.getMaxAnisotropy();
+
+  this._groundbm.wrapS	= THREE.RepeatWrapping;
+  this._groundbm.wrapT	= THREE.RepeatWrapping;
+  this._groundbm.repeat.x= 80
+  this._groundbm.repeat.y= 80
+  this._groundbm.anisotropy = this._renderer.getMaxAnisotropy();
+
+
+  var terrainMaterial = new THREE.MeshPhongMaterial();
+  this._terrain = new HeightMapMesh(heightMapGeometry, terrainMaterial);
+  
+  this._environment = new Environment(this._terrain, this.mapWidth, this.mapDepth, this.mapMaxHeight);
+  this._environment.loadTreeModel(objMtlLoader, this._terrain);
+  this._environment.loadInstancedRocks(objMtlLoader, this._terrain);
+}
 
 World.prototype.onMouseClick = function(event) {
   var vec = new THREE.Vector3(
