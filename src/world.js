@@ -4,8 +4,7 @@ function World(renderer) {
   this._scene = new THREE.Scene();
   this._objects = [];
   this._renderer = renderer;
-  this._player = new Player(this._scene);
-  this.rata = null;
+  this._player = new Player();
   this._terrain = null;
 
   this._skyTexture = null;
@@ -15,13 +14,14 @@ function World(renderer) {
 
   this._groundbm = null;
 
+  this._cameraZoom = 5;
+
   this._skybox = null;
 
   this._water = new Water(1.5);
 
   //Kameraposisjon relativt til player
-  var zoom = 10;
-  this._relativeCameraPosition = new THREE.Vector3(zoom, zoom, zoom);
+  this._relativeCameraPosition = new THREE.Vector3(this._cameraZoom, this._cameraZoom, this._cameraZoom);
   this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 5000);
 
   this._spotLight = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
@@ -57,15 +57,9 @@ World.prototype.init = function() {
   this._scene.add(directionalLight);
   this._scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
 
-  this.rata.setSkinName('ctf_r');
-	this.rata.setWeaponName('w_sshotgun');
 
-  this._scene.add(this.rata.character.object3d);
-
-
-
-  this._spotLight.position.set( 1000, 500, -1000 );
-  this._spotLight.target.position.set( 0, 0, 1000 );
+  this._spotLight.position.set( 0, 1500, 1000 );
+  this._spotLight.target.position.set( 0, 0, 0 );
   this._spotLight.castShadow = true;
   this._spotLight.shadowCameraNear = 1200;
   this._spotLight.shadowCameraFar = 2500;
@@ -75,40 +69,6 @@ World.prototype.init = function() {
   this._spotLight.shadowMapHeight = this.shadowMapHeight;
   //this.addObject(this._spotLight);
   // this.addObject(this._ambientLight);
-
-  this.rata.character.object3d.castShadow = true;
-
-  //////////////////////////////////////////////////////////////////////////////////
-	//		controls.input based on keyboard				//
-	//////////////////////////////////////////////////////////////////////////////////
-  var ratat = this.rata;
-	document.body.addEventListener('keydown', function(event){
-		var inputs	= ratat.controls.inputs
-		if( event.keyCode === 'W'.charCodeAt(0) )	inputs.up	= true
-		if( event.keyCode === 'S'.charCodeAt(0) )	inputs.down	= true
-		if( event.keyCode === 'A'.charCodeAt(0) )	inputs.left	= true
-		if( event.keyCode === 'D'.charCodeAt(0) )	inputs.right	= true
-
-		// to support arrows
-		if( event.keyCode === 38 )	inputs.up	= true
-		if( event.keyCode === 40 )	inputs.down	= true
-		if( event.keyCode === 37 )	inputs.left	= true
-		if( event.keyCode === 39 )	inputs.right	= true
-	});
-	document.body.addEventListener('keyup', function(event){
-		var inputs	= ratat.controls.inputs
-		if( event.keyCode === 'W'.charCodeAt(0) )	inputs.up	= false
-		if( event.keyCode === 'S'.charCodeAt(0) )	inputs.down	= false
-		if( event.keyCode === 'A'.charCodeAt(0) )	inputs.left	= false
-		if( event.keyCode === 'D'.charCodeAt(0) )	inputs.right	= false
-    //if( event.keyCode === 'R'.charCodeAt(0) ) ratat.setAnimationName('stand');
-
-		// to support arrows
-		if( event.keyCode === 38 )	inputs.up	= false
-		if( event.keyCode === 40 )	inputs.down	= false
-		if( event.keyCode === 37 )	inputs.left	= false
-		if( event.keyCode === 39 )	inputs.right	= false
-	});
 
   //Last inn heightmap
   var heightMapImg = document.getElementById('heightmap');
@@ -137,34 +97,37 @@ World.prototype.init = function() {
   });
   this._terrain = new HeightMapMesh(heightMapGeometry, terrainMaterial);
 
-
-  var tree = this._environment._tree;
+  var tree = this._environment._rock;
   tree.position.set(0,5,0);
-  //this._scene.add(tree);
+  this._scene.add(tree);
 
+  this._environment.setupRocks(this._terrain, this._scene);
   this._environment.setupTrees(this._terrain, this._scene);
 
-
-  this.rata.character.object3d.position.y =
-  this._terrain.getHeightAtPoint(this.rata.character.object3d.position);
-  this._camera.lookAt(this.rata.character.object3d.position);
+  this._camera.lookAt(this._player.getPosition());
 
   this._terrain.name = "terrain";
 
   this.addObject(this._terrain);
   this.addObject(this._cursor);
 
-  this._scene.add(this._player._model);
-
   this._water.init();
   this._scene.add(this._water.mesh);
+
+  this._player.init(this._scene, this._terrain);
 
   var self = this;
   document.addEventListener("mousedown", function(event){
     self.onMouseClick(event);
   });
 
-  //for(var i = 0; i )
+  var rel = this._relativeCameraPosition;
+  window.addEventListener("mousewheel", function(event){
+    var delta = -(event.wheelDelta/100);
+    rel.x += delta;
+    rel.y += delta;
+    rel.z += delta;
+  });
 
 }
 
@@ -173,32 +136,12 @@ World.prototype.render = function(renderer) {
 }
 
 World.prototype.update = function(delta) {
-
-
-  var ratapos = this.rata.character.object3d.position;
-  var terrheight = this._terrain.getHeightAtPoint(ratapos);
-  var diff = Math.abs(ratapos.y - terrheight)*10;
-
-  if(ratapos.y > terrheight){
-    this.rata.character.object3d.position.y -= (0.5+diff)*delta;
-  }
-  if(ratapos.y < terrheight){
-    this.rata.character.object3d.position.y += (0.5+diff)*delta;
-  }
-
-  var inputs	= this.rata.controls.inputs
-  if( inputs.up || inputs.down ){
-    this.rata.setAnimationName('run')
-  }else {
-    this.rata.setAnimationName('stand')
-  }
-  this.rata.update(delta);
-
+  this._player.update(delta);
   var pos = new THREE.Vector3();
-  pos.copy(ratapos);
+  pos.copy(this._player.getPosition());
   pos.add(this._relativeCameraPosition);
   this._camera.position.set(pos.x, pos.y, pos.z);
-  this._camera.lookAt(ratapos);
+  this._camera.lookAt(this._player.getPosition());
   this._camera.updateProjectionMatrix();
 }
 
@@ -214,13 +157,13 @@ World.prototype.load = function(objMtlLoader) {
                     function(obj) {
                       self._cursor = obj;
                     });
-
-  this.rata = new THREEx.MD2CharacterRatmahatta();
   this._water.load();
   this._environment.loadTreeModel(objMtlLoader);
+  this._environment.loadRockModel(objMtlLoader);
   this._skyTexture = THREE.ImageUtils.loadTexture("resources/skydome.jpg");
   this._groundtex = THREE.ImageUtils.loadTexture("resources/grass.jpg");
   this._groundbm = THREE.ImageUtils.loadTexture("resources/dirtbm.jpg");
+  this._player.load();
   }
 
 World.prototype.onMouseClick = function(event) {
@@ -237,5 +180,6 @@ World.prototype.onMouseClick = function(event) {
   var intersects = raycaster.intersectObjects([this._terrain]);
   if(intersects.length > 0) {
     this._cursor.position.copy(intersects[0].point);
+    this._player.setGoal(intersects[0].point);
   }
 }

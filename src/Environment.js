@@ -3,6 +3,7 @@ function Environment() {
   this._tree = null;
 
   this._rocks = null;
+  this._rock = null;
 }
 
 Environment.prototype.loadTreeModel = function(objectMaterialLoader) {
@@ -20,16 +21,31 @@ Environment.prototype.loadTreeModel = function(objectMaterialLoader) {
     });
 }
 
+Environment.prototype.loadRockModel = function(objectMaterialLoader) {
+  var self = this;
+  objectMaterialLoader.load(
+    'resources/models/Rock1.obj',
+    'resources/models/Rock1.mtl',
+    function(loadedObject) {
+      "use strict";
+      // Custom function to handle what's supposed to happen once we've loaded the model
+
+      var bbox = new THREE.Box3().setFromObject(loadedObject);
+      console.log(bbox);
+      self._rock = loadedObject;
+    });
+}
+
 Environment.prototype.setupTrees = function(terrain, scene) {
   "use strict";
 
   var worldMapWidth = 250;
   var worldMapDepth = 250;
-  var worldMapMaxHeight = 500;
+  var worldMapMaxHeight = 100;
 
-  var maxNumObjects = 10;
+  var maxNumObjects = 70;
   var spreadCenter = new THREE.Vector3(-0.2 * worldMapWidth, 0, -0.2 * worldMapDepth);
-  var spreadRadius = 0.1 * worldMapWidth;
+  var spreadRadius = 0.5 * worldMapWidth;
   //var geometryScale = 30;
 
   var minHeight = 1;
@@ -40,9 +56,9 @@ Environment.prototype.setupTrees = function(terrain, scene) {
   // var scaleSpread = 40;
   // var scaleMinimum = 10;
 
-  var scaleMean = 1;
-  var scaleSpread = 1;
-  var scaleMinimum = 1;
+  var scaleMean = 0;
+  var scaleSpread = 0;
+  var scaleMinimum = 0;
 
 
   var generatedAndValidPositions = generateRandomData(maxNumObjects,
@@ -84,13 +100,13 @@ Environment.prototype.setupTrees = function(terrain, scene) {
     // We should know where the bottom of our object is
     object.position.copy(generatedAndValidPositions[i]);
     terrheight = terrain.getHeightAtPoint(object.position);
-    object.position.y = terrheight + bbox.min.y - 0.5;//bbox.min.y * terrheight;
+    object.position.y = terrheight + 1.5;//bbox.min.y * terrheight;
 
-    object.scale.set(
-      generatedAndValidScales[i],
-      generatedAndValidScales[i],
-      generatedAndValidScales[i]
-    );
+    // object.scale.set(
+    //   generatedAndValidScales[i],
+    //   generatedAndValidScales[i],
+    //   generatedAndValidScales[i]
+    // );
 
     object.name = "LowPolyTree";
     //terrain.add(object);
@@ -100,32 +116,44 @@ Environment.prototype.setupTrees = function(terrain, scene) {
 }
 
 
-Environment.prototype.setupInstancedRocks = function(terrain, objectMaterialLoader) {
+Environment.prototype.setupRocks = function(terrain, scene) {
   "use strict";
-  var maxNumObjects = 2000;
-  var spreadCenter = new THREE.Vector3(0.1 * worldMapWidth, 0, 0.2 * worldMapDepth);
-  var spreadRadius = 0.2 * worldMapWidth;
+
+  var worldMapWidth = 250;
+  var worldMapDepth = 250;
+  var worldMapMaxHeight = 100;
+
+  var maxNumObjects = 200;
+  var spreadCenter = new THREE.Vector3(-0.2 * worldMapWidth, 0, -0.2 * worldMapDepth);
+  var spreadRadius = 0.5 * worldMapWidth;
   //var geometryScale = 30;
 
-  var minHeight = 0.2 * worldMapMaxHeight;
-  var maxHeight = 0.6 * worldMapMaxHeight;
+  var minHeight = 1;
+  var maxHeight = 5;
   var maxAngle = 30 * Math.PI / 180;
 
-  var scaleMean = 50;
-  var scaleSpread = 20;
+  // var scaleMean = 100;
+  // var scaleSpread = 40;
+  // var scaleMinimum = 10;
+
+  var scaleMean = 3;
+  var scaleSpread = 3;
   var scaleMinimum = 1;
 
+
   var generatedAndValidPositions = generateRandomData(maxNumObjects,
-    //generateGaussPositionAndCorrectHeight.bind(null, terrain, spreadCenter, spreadRadius),
+    generateGaussPositionAndCorrectHeight.bind(null, terrain, spreadCenter, spreadRadius),
     // The previous is functionally the same as
-    function() {
-      return generateGaussPositionAndCorrectHeight(terrain, spreadCenter, spreadRadius)
-    },
+    // function() {
+    //      return generateGaussPositionAndCorrectHeight(terrain, spreadCenter, spreadRadius)
+    // }
 
     // If you want to accept every position just make function that returns true
-    positionValidator.bind(null, terrain, minHeight, maxHeight, maxAngle)
+    positionValidator.bind(null, terrain, minHeight, maxHeight, maxAngle),
+
+    // How many tries to generate positions before skipping it?
+    5
   );
-  var translationArray = makeFloat32Array(generatedAndValidPositions);
 
   var generatedAndValidScales = generateRandomData(generatedAndValidPositions.length,
 
@@ -139,85 +167,32 @@ Environment.prototype.setupInstancedRocks = function(terrain, objectMaterialLoad
       return scale > scaleMinimum;
     }
   );
-  var scaleArray = makeFloat32Array(generatedAndValidScales);
 
-  // Lots of other possibilities, eg: custom color per object, objects changing (requires dynamic
-  // InstancedBufferAttribute, see its setDynamic), but require more shader magic.
-  var translationAttribute = new THREE.InstancedBufferAttribute(translationArray, 3, 1);
-  var scaleAttribute = new THREE.InstancedBufferAttribute(scaleArray, 1, 1);
+  var numObjects = generatedAndValidPositions.length;
 
-  var instancedMaterial = new THREE.ShaderMaterial({
-    uniforms: THREE.UniformsUtils.merge(
-      //THREE.UniformsLib['lights'],
-      {
-        color: {
-          type: "c",
-          value: new THREE.Color(Math.random(), Math.random(), Math.random())
-        }
-      }
-    ),
-    vertexShader: document.getElementById("instanced-vshader").textContent,
-    fragmentShader: THREE.ShaderLib['basic'].fragmentShader,
+  var bbox = new THREE.Box3().setFromObject(this._tree);
+  console.log(bbox);
 
-    //lights: true
-  });
+  var terrheight = 0;
+  for (var i = 0; i < numObjects; ++i) {
+    var object = this._rock.clone();
 
-  objectMaterialLoader.load(
-    'resources/models/Rock1.obj',
-    'resources/models/Rock1.mtl',
-    function(loadedObject) {
-      "use strict";
-      // Custom function to handle what's supposed to happen once we've loaded the model
+    // We should know where the bottom of our object is
+    object.position.copy(generatedAndValidPositions[i]);
+    terrheight = terrain.getHeightAtPoint(object.position);
+    object.position.y = terrheight + 0.3;//bbox.min.y * terrheight;
 
-      // Extract interesting object (or modify the model in a 3d program)
-      var object = loadedObject.children[1].clone();
+    object.scale.set(
+      generatedAndValidScales[i],
+      generatedAndValidScales[i],
+      generatedAndValidScales[i]
+    );
 
-      // Traverse the model objects and replace their geometry with an instanced copy
-      // Each child in the geometry with a custom color(, and so forth) will be drawn with a
-      object.traverse(function(node) {
-        if (node instanceof THREE.Mesh) {
-          console.log('mesh', node);
-
-          var oldGeometry = node.geometry;
-
-          node.geometry = new THREE.InstancedBufferGeometry();
-
-          // Copy the the prevoius geometry
-          node.geometry.fromGeometry(oldGeometry);
-
-          // Associate our generated values with named attributes.
-          node.geometry.addAttribute("translate", translationAttribute);
-          node.geometry.addAttribute("scale", scaleAttribute);
-
-          //node.geometry.scale(geometryScale, geometryScale, geometryScale);
-
-          // A hack to avoid custom making a boundary box
-          node.frustumCulled = false;
-
-          // Set up correct material. We must replace whatever has been set with a fitting material
-          // that can be used for instancing.
-          var oldMaterial = node.material;
-          console.log('material', oldMaterial);
-
-          node.material = instancedMaterial.clone();
-          if ("color" in oldMaterial) {
-            node.material.uniforms['diffuse'] = {
-              type: 'c',
-              value: oldMaterial.color
-            };
-          }
-        }
-      });
-
-      var bbox = new THREE.Box3().setFromObject(object);
-
-      // We should know where the bottom of our object is
-      object.position.y -= bbox.min.y;
-
-      object.name = "RockInstanced";
-      this._rocks = object;
-      //terrain.add(object);
-    }, onProgress, onError);
+    object.name = "LowPolyRock";
+    //terrain.add(object);
+    scene.add(object);
+    //this._trees = object;
+  }
 }
 
 function generateGaussPositionAndCorrectHeight(terrain, center, radius) {
