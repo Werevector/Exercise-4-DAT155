@@ -115,6 +115,10 @@ World.prototype.init = function() {
   document.addEventListener("mousedown", function(event){
     self.onMouseClick(event);
   });
+  document.addEventListener("keyup", function(event){
+	  if(event.keyCode === 'R'.charCodeAt(0))
+		  self._player.toggleWASDControls();
+  });
 
   var rel = this._relativeCameraPosition;
   window.addEventListener("mousewheel", function(event){
