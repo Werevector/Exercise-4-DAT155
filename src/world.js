@@ -54,7 +54,7 @@ World.prototype.init = function() {
   var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
   directionalLight.name = 'sun';
   //directionalLight.intensity = 1;
-  directionalLight.position.set(50, 50, 0);
+  directionalLight.position.set(100, 50, 0);
   directionalLight.shadowCameraVisible = true;
   directionalLight.castShadow = true;
   directionalLight.shadowCameraNear = 10;

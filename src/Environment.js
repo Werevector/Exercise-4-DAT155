@@ -14,9 +14,13 @@ Environment.prototype.loadTreeModel = function(objectMaterialLoader) {
     function(loadedObject) {
       "use strict";
       // Custom function to handle what's supposed to happen once we've loaded the model
-      loadedObject.traverse( function( node ) { if ( node instanceof THREE.Mesh ) { node.castShadow = true; } } );
+      loadedObject.traverse( function( node ) {
+        if ( node instanceof THREE.Mesh ) {
+          node.castShadow = true;
+        }
+      });
+
       var bbox = new THREE.Box3().setFromObject(loadedObject);
-      console.log(bbox);
       self._tree = loadedObject;
     });
 }
