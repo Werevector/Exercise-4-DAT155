@@ -124,6 +124,8 @@ World.prototype.init = function() {
     rel.z += delta;
   });
 
+  this._scene.fog = new THREE.Fog( 0xefd1b5, 0.0025, 200 );
+
 }
 
 World.prototype.render = function(renderer) {
