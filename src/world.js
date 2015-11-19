@@ -22,7 +22,7 @@ function World(renderer) {
 
   //Kameraposisjon relativt til player
   this._relativeCameraPosition = new THREE.Vector3(this._cameraZoom, this._cameraZoom, this._cameraZoom);
-  this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 5000);
+  this._camera = new THREE.PerspectiveCamera(70, RENDER_WIDTH/RENDER_HEIGHT, 0.1, 200);
 
   this._spotLight = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2, 1);
   this._ambientLight = new THREE.AmbientLight(0x222222);
@@ -41,7 +41,7 @@ function World(renderer) {
 World.prototype.init = function() {
   this._scene.add(this._camera);
 
-  var skyboxGeometry = new THREE.SphereGeometry(1000, 60, 60);
+  var skyboxGeometry = new THREE.SphereGeometry(175, 60, 60);
   var skyboxMaterial = new THREE.MeshBasicMaterial({
     map: this._skyTexture,
     color: 0xffffff,
@@ -117,6 +117,10 @@ World.prototype.init = function() {
   var self = this;
   document.addEventListener("mousedown", function(event){
     self.onMouseClick(event);
+  });
+  document.addEventListener("keyup", function(event){
+	  if(event.keyCode === 'R'.charCodeAt(0))
+		  self._player.toggleWASDControls();
   });
 
   var rel = this._relativeCameraPosition;
