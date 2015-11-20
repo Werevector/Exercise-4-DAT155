@@ -118,12 +118,23 @@ World.prototype.init = function() {
   document.addEventListener("mousedown", function(event){
     self.onMouseClick(event);
   });
+  
+  var rel = this._relativeCameraPosition;
   document.addEventListener("keyup", function(event){
-	  if(event.keyCode === 'R'.charCodeAt(0))
-		  self._player.toggleWASDControls();
+    if(event.keyCode === 'R'.charCodeAt(0))
+	  self._player.toggleWASDControls();
+    if(event.keyCode === 33) {//Page up
+      rel.x -= 0.5;
+      rel.y -= 0.5;
+      rel.z -= 0.5;
+    }
+    if(event.keyCode === 34) {//Page down
+      rel.x += 0.5;
+      rel.y += 0.5;
+      rel.z += 0.5;
+    }
   });
 
-  var rel = this._relativeCameraPosition;
   window.addEventListener("mousewheel", function(event){
     var delta = -(event.wheelDelta/100);
     rel.x += delta;
