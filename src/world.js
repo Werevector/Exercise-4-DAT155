@@ -55,7 +55,7 @@ World.prototype.init = function() {
   directionalLight.name = 'sun';
   //directionalLight.intensity = 1;
   directionalLight.position.set(100, 50, 0);
-  directionalLight.shadowCameraVisible = true;
+  //directionalLight.shadowCameraVisible = true;
   directionalLight.castShadow = true;
   directionalLight.shadowCameraNear = 10;
   directionalLight.shadowCameraFar = 2000;
@@ -63,7 +63,7 @@ World.prototype.init = function() {
   directionalLight.shadowBias = 0.0001;
   directionalLight.shadowMapWidth = this.shadowMapWidth;
   directionalLight.shadowMapHeight = this.shadowMapHeight;
-  directionalLight.shadowCameraLeft = -100; // or whatever value works for the scale of your scene
+  directionalLight.shadowCameraLeft = -100;
   directionalLight.shadowCameraRight = 150;
   directionalLight.shadowCameraTop = 100;
   directionalLight.shadowCameraBottom = -100;
