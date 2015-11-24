@@ -3,7 +3,7 @@
 
 Plans for development
 ---------------------
-
+Hosted project: https://werevector.github.io/Exercise-4-DAT155/  
 The general idea is to create a 3d scene with an isometrical view, like those found in rpgs etc.  
 The scene is going to have terrain, with lighting and scenery.  
 A character should be displayed, with the ability to move around in the scene.  
